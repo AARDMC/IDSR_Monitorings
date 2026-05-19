@@ -161,7 +161,6 @@
       <span id="weekLabel" class="text-muted fw-bold me-1" style="font-size: 0.85rem;"></span>
       <select class="form-select text-primary" id="weekDropdown" onchange="selectWeek(this.value)" style="width: auto;"></select>
       
-      <!-- FIX: Removed default selection, added 'Select Sub City' placeholder -->
       <select class="form-select text-primary" id="subCityFilter" style="width: auto;">
         <option value="" disabled selected>Select Sub City</option>
       </select>
@@ -223,17 +222,19 @@
     <div class="fw-bold text-primary" id="loaderText" style="font-size: 1.1rem; letter-spacing: 0.5px;">Initializing Analytics...</div>
   </div>
 
+  <!-- PASSWORD MANAGER BYPASS FIX -->
+  <!-- Stripped out keywords like "Auth", "ID", and "Authorization" from internal names -->
   <div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
         <div class="modal-header bg-light border-bottom" style="border-radius: 12px 12px 0 0;">
-          <h5 class="modal-title fw-bold text-slate-800"><i class="bi bi-shield-lock-fill text-primary me-2"></i>Export Authorization</h5>
+          <h5 class="modal-title fw-bold text-slate-800"><i class="bi bi-shield-check text-primary me-2"></i>Export Validation</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body p-4">
           <div class="mb-4">
-            <label class="form-label fw-bold text-secondary" style="font-size: 0.85rem; text-transform: uppercase;">Sub City ID <span class="text-danger">*</span></label>
-            <input type="text" autocomplete="off" class="form-control form-control-lg fs-6 shadow-sm" id="exportAuthId" placeholder="Enter ID to authorize download">
+            <label class="form-label fw-bold text-secondary" style="font-size: 0.85rem; text-transform: uppercase;">Sub City Code <span class="text-danger">*</span></label>
+            <input type="text" autocomplete="new-password" spellcheck="false" class="form-control form-control-lg fs-6 shadow-sm" id="exportZoneCode" placeholder="Enter valid code to proceed">
           </div>
           <div class="mb-3">
             <label class="form-label fw-bold text-secondary" style="font-size: 0.85rem; text-transform: uppercase;">Export Scope</label>
@@ -694,7 +695,6 @@
     }
 
     function openExportModal() {
-      // FIX: Require user to select a Sub City before allowing export
       let subCitySelect = document.getElementById('subCityFilter');
       if (!subCitySelect.value) {
          alert("Please select a Sub City from the dropdown first.");
@@ -710,19 +710,22 @@
       document.getElementById('exportToWeek').value = activeWeekNumber;
       
       document.getElementById('exportType').value = 'single';
-      document.getElementById('exportAuthId').value = '';
+      
+      // FIX: Ensure the input box resets
+      document.getElementById('exportZoneCode').value = '';
       toggleExportType();
       
       exportModalInstance.show();
     }
 
     function executeExport() {
-      let authId = document.getElementById('exportAuthId').value.trim();
+      // FIX: Match the new non-auth ID
+      let inputCode = document.getElementById('exportZoneCode').value.trim();
       let type = document.getElementById('exportType').value;
       let selectedExpectedCode = document.getElementById('subCityFilter').value;
       
-      if (!authId) {
-          alert("Authorization ID is required to download.");
+      if (!inputCode) {
+          alert("Validation Code is required to download.");
           return;
       }
       
@@ -750,7 +753,7 @@
       google.script.run
         .withSuccessHandler(triggerDownload)
         .withFailureHandler(() => { exportMsg.innerText = 'Export Failed'; setTimeout(() => { exportMsg.innerText = ''; }, 3000); })
-        .getRawExportData(authId, selectedExpectedCode, type, p1, p2);
+        .getRawExportData(inputCode, selectedExpectedCode, type, p1, p2);
     }
 
     function triggerDownload(res) {
@@ -758,7 +761,7 @@
       
       if (!res.success) {
         alert(res.error);
-        exportMsg.innerText = 'Authentication Failed';
+        exportMsg.innerText = 'Validation Failed';
         setTimeout(() => { exportMsg.innerText = ''; }, 3000);
         return;
       }
