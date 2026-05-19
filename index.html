@@ -35,26 +35,15 @@
       font-size: 0.95rem; 
       margin: 0;
       padding: 0;
-      
-      height: 100vh;
-      width: 100vw;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      height: 100vh; width: 100vw;
+      display: flex; flex-direction: column; overflow: hidden;
     }
 
     /* HEADER */
     .top-header {
-      background: var(--card-bg);
-      padding: 10px 16px;
-      border-bottom: 2px solid var(--border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 10;
-      flex-shrink: 0;
-      height: 65px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      background: var(--card-bg); padding: 10px 16px; border-bottom: 2px solid var(--border-color);
+      display: flex; justify-content: space-between; align-items: center; z-index: 10;
+      flex-shrink: 0; height: 65px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);
     }
     .brand-title { margin: 0; font-weight: 800; font-size: 1.25rem; color: #0f172a; line-height: 1.2; letter-spacing: -0.5px;}
     .brand-subtitle { margin: 0; font-size: 0.75rem; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
@@ -71,18 +60,11 @@
     .btn { font-size: 0.85rem; padding: 4px 10px; border-radius: 6px; font-weight: 600; height: 34px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
 
     /* WORKSPACE */
-    .main-workspace {
-      flex: 1; display: flex; flex-direction: column; padding: 12px; gap: 12px; min-height: 0; overflow: hidden;
-    }
+    .main-workspace { flex: 1; display: flex; flex-direction: column; padding: 12px; gap: 12px; min-height: 0; overflow: hidden; }
 
     /* KPI CARDS */
     .kpi-row { display: flex; gap: 12px; flex-shrink: 0; height: 60px; }
-    .kpi-card {
-      flex: 1; border-radius: 10px; padding: 6px 14px; 
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
-      display: flex; flex-direction: column; justify-content: center; 
-      border: none; position: relative; overflow: hidden; color: white;
-    }
+    .kpi-card { flex: 1; border-radius: 10px; padding: 6px 14px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: center; border: none; position: relative; overflow: hidden; color: white; }
     .kpi-card.expected { background: linear-gradient(135deg, #475569 0%, #334155 100%); }
     .kpi-card.reported { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
     .kpi-card.alerts { background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%); }
@@ -92,18 +74,18 @@
     .gradient-50  { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%) !important; }
     .gradient-low { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important; }
 
-    .kpi-card::after {
-      content: ''; position: absolute; right: -10px; bottom: -10px;
-      width: 50px; height: 50px; background: rgba(255,255,255,0.15); border-radius: 50%;
-    }
-
+    .kpi-card::after { content: ''; position: absolute; right: -10px; bottom: -10px; width: 50px; height: 50px; background: rgba(255,255,255,0.15); border-radius: 50%; }
     .kpi-label { font-size: 0.75rem; color: rgba(255,255,255,0.85); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;}
     .kpi-value { font-size: 1.25rem; font-weight: 800; color: #ffffff !important; line-height: 1.1; margin-top: 2px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);}
 
     /* CHARTS & ACCORDION */
     .analytics-row { display: flex; gap: 12px; flex-shrink: 0; height: clamp(220px, 32vh, 280px); }
     .chart-panel { flex: 1; background: var(--card-bg); border-radius: 12px; padding: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
-    .chart-wrapper { flex: 1; position: relative; min-height: 0; width: 100%; }
+    
+    /* STRICT FIX: Enabled horizontal scrolling for mobile charts */
+    .chart-wrapper { flex: 1; position: relative; min-height: 0; width: 100%; overflow-x: auto; overflow-y: hidden; }
+    .chart-area { position: relative; height: 100%; width: 100%; }
+
     .data-panel { flex: 1; min-height: 0; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; }
     .data-panel-header { padding: 12px 16px; border-bottom: 2px solid var(--border-color); background: #f8fafc; font-weight: 700; font-size: 1rem; color: #0f172a; flex-shrink: 0; }
     .data-panel-content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px; background: #f1f5f9; }
@@ -158,6 +140,10 @@
       .kpi-row { flex-wrap: wrap; height: auto; }
       .kpi-card { flex: 1 1 calc(50% - 12px); min-width: 140px; padding: 12px; }
       .analytics-row { height: 350px; margin-bottom: 15px; }
+      
+      /* STRICT FIX: Expand width on mobile to force horizontal scrolling for the chart */
+      .chart-area { min-width: 750px; }
+      
       .data-panel { display: block; overflow: visible; }
       .data-panel-content { overflow: visible; padding: 0; background: transparent; }
       .accordion-button .d-flex { flex-direction: column; align-items: flex-start !important; gap: 8px; }
@@ -177,25 +163,15 @@
       <span id="weekLabel" class="text-muted fw-bold me-1" style="font-size: 0.85rem;"></span>
       <select class="form-select text-primary" id="weekDropdown" onchange="selectWeek(this.value)" style="width: auto;"></select>
       
-      <select class="form-select text-primary" id="subCityFilter" style="width: auto;">
-        <!-- Populated via JS -->
-      </select>
+      <select class="form-select text-primary" id="subCityFilter" style="width: auto;"></select>
       
-      <div class="dropdown">
-        <button class="btn btn-primary d-flex align-items-center fw-bold" type="button" data-bs-toggle="dropdown">
-          <i class="bi bi-cloud-arrow-down-fill me-1"></i> Export
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end shadow" style="font-size: 0.9rem; border-radius: 8px;">
-          <li><a class="dropdown-item fw-semibold" href="#" onclick="downloadCSV('single')"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Current Week</a></li>
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item fw-semibold" href="#" onclick="downloadCSV('multiple')"><i class="bi bi-files text-primary me-2"></i>All Weeks (Range)</a></li>
-        </ul>
-      </div>
+      <button class="btn btn-primary d-flex align-items-center fw-bold shadow-sm" type="button" onclick="openExportModal()">
+        <i class="bi bi-cloud-arrow-down-fill me-2"></i> Export Data
+      </button>
     </div>
   </header>
 
   <main class="main-workspace" id="dashboardScreen" style="display: none; opacity: 0;">
-    
     <div class="kpi-row">
       <div class="kpi-card expected">
         <span class="kpi-label"><i class="bi bi-building me-1"></i>Expected</span>
@@ -223,7 +199,9 @@
       <div class="chart-panel">
         <h6 class="mb-2 text-center fw-bold text-slate-700" style="font-size: 0.9rem; text-transform: uppercase; color:#334155;">Completeness & Timeliness by Sub Cities</h6>
         <div class="chart-wrapper">
-          <canvas id="performanceChart"></canvas>
+          <div class="chart-area">
+             <canvas id="performanceChart"></canvas>
+          </div>
         </div>
       </div>
     </div>
@@ -237,12 +215,55 @@
         <div class="row g-3 accordion" id="zoneAccordion"></div>
       </div>
     </div>
-
   </main>
 
   <div class="loader-overlay" id="loader">
     <div class="spinner"></div>
     <div class="fw-bold text-primary" id="loaderText" style="font-size: 1.1rem; letter-spacing: 0.5px;">Initializing Analytics...</div>
+  </div>
+
+  <!-- STRICT FIX: Interactive Interactive Modal replacing native prompt() -->
+  <div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+        <div class="modal-header bg-light border-bottom" style="border-radius: 12px 12px 0 0;">
+          <h5 class="modal-title fw-bold text-slate-800"><i class="bi bi-shield-lock-fill text-primary me-2"></i>Export Authorization</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-4">
+            <label class="form-label fw-bold text-secondary" style="font-size: 0.85rem; text-transform: uppercase;">Sub City ID <span class="text-danger">*</span></label>
+            <input type="password" class="form-control form-control-lg fs-6 shadow-sm" id="exportAuthId" placeholder="Enter ID to authorize download">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary" style="font-size: 0.85rem; text-transform: uppercase;">Export Scope</label>
+            <select class="form-select shadow-sm" id="exportType" onchange="toggleExportType()">
+              <option value="single">Current Week Only</option>
+              <option value="range">Custom Range (Max 10 Weeks)</option>
+            </select>
+          </div>
+          <div id="rangeSelection" style="display:none;" class="row g-2 mt-2">
+            <div class="col-6">
+              <label class="form-label fw-semibold text-secondary" style="font-size:0.8rem;">From Week</label>
+              <select class="form-select shadow-sm" id="exportFromWeek"></select>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold text-secondary" style="font-size:0.8rem;">To Week</label>
+              <select class="form-select shadow-sm" id="exportToWeek"></select>
+            </div>
+            <div class="col-12 mt-2 text-danger fw-bold text-center" id="rangeError" style="display:none; font-size:0.85rem;">
+               <i class="bi bi-exclamation-triangle-fill me-1"></i> Range cannot exceed 10 weeks.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-top p-3 bg-light" style="border-radius: 0 0 12px 12px;">
+          <button type="button" class="btn btn-light border text-secondary fw-bold" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary fw-bold shadow-sm px-4" onclick="executeExport()">
+             <i class="bi bi-download me-1"></i> Download CSV
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -291,19 +312,28 @@
     let allDashboardData = [];
     let isRegionalView = true;
     let chartPerformanceInstance = null;
+    let exportModalInstance = null;
 
     document.addEventListener("DOMContentLoaded", () => {
+      exportModalInstance = new bootstrap.Modal(document.getElementById('exportModal'));
       populateWeekDropdownWithDefault();
       
       google.script.run
         .withSuccessHandler(function(codes) {
            let select = document.getElementById('subCityFilter');
            let html = '';
+           // STRICT FIX: Ensure Addis Ababa PHEM doesn't appear twice
+           let seenNames = new Set();
+           
            for (let code in codes) {
                let name = codes[code];
                if (name === "REGION") name = "Addis Ababa PHEM";
-               let selected = (code === "Addis_RDMC") ? "selected" : "";
-               html += `<option value="${code}" ${selected}>${name}</option>`;
+               
+               if (!seenNames.has(name.toLowerCase())) {
+                   seenNames.add(name.toLowerCase());
+                   let selected = (code === "Addis_RDMC") ? "selected" : "";
+                   html += `<option value="${code}" ${selected}>${name}</option>`;
+               }
            }
            select.innerHTML = html;
         })
@@ -659,36 +689,75 @@
       });
     }
 
-    function downloadCSV(mode) {
-      let subCitySelect = document.getElementById('subCityFilter');
-      let expectedCode = subCitySelect.value;
-      let selectedName = subCitySelect.options[subCitySelect.selectedIndex].text;
-      
-      // ⚡ REQUIRED SECURITY PROMPT: User MUST enter Sub City ID to download
-      let enteredId = prompt(`Authorization Required:\nPlease enter the Sub City ID for ${selectedName}:`);
-      
-      if (!enteredId) return; // User cancelled
-      
-      // Verification Step
-      if (enteredId.trim() !== expectedCode && enteredId.trim() !== "Addis_RDMC") {
-        alert("Authentication Failed: Incorrect Sub City ID entered.");
-        return;
-      }
+    // STRICT FIX: Interactive Modal Logic to enforce limits and ID entry
+    function toggleExportType() {
+      let type = document.getElementById('exportType').value;
+      document.getElementById('rangeSelection').style.display = type === 'range' ? 'flex' : 'none';
+      document.getElementById('rangeError').style.display = 'none';
+    }
 
+    function openExportModal() {
+      // Setup the dropdowns for week selection
+      let html = '';
+      for (let i = 1; i <= 52; i++) { html += `<option value="${i}">Week ${i}</option>`; }
+      document.getElementById('exportFromWeek').innerHTML = html;
+      document.getElementById('exportToWeek').innerHTML = html;
+      
+      // Default to sensible values
+      document.getElementById('exportFromWeek').value = Math.max(1, activeWeekNumber - 9);
+      document.getElementById('exportToWeek').value = activeWeekNumber;
+      
+      document.getElementById('exportType').value = 'single';
+      document.getElementById('exportAuthId').value = '';
+      toggleExportType();
+      
+      exportModalInstance.show();
+    }
+
+    function executeExport() {
+      let authId = document.getElementById('exportAuthId').value.trim();
+      let type = document.getElementById('exportType').value;
+      let selectedExpectedCode = document.getElementById('subCityFilter').value || currentSessionCode;
+      
+      if (!authId) {
+          alert("Authorization ID is required to download.");
+          return;
+      }
+      
+      let p1 = null, p2 = null;
+      if (type === 'range') {
+          p1 = parseInt(document.getElementById('exportFromWeek').value);
+          p2 = parseInt(document.getElementById('exportToWeek').value);
+          
+          if (p2 < p1) { let temp = p1; p1 = p2; p2 = temp; } // Swap if user selected backward
+          
+          // Enforce max 10 weeks constraint strictly
+          if ((p2 - p1) >= 10) {
+              document.getElementById('rangeError').style.display = 'block';
+              return;
+          }
+      } else {
+          p1 = activeWeekNumber;
+      }
+      
+      document.getElementById('rangeError').style.display = 'none';
+      exportModalInstance.hide();
+      
       let exportMsg = document.getElementById('exportMessage');
       exportMsg.innerText = 'Preparing Download...';
       
       google.script.run
         .withSuccessHandler(triggerDownload)
         .withFailureHandler(() => { exportMsg.innerText = 'Export Failed'; setTimeout(() => { exportMsg.innerText = ''; }, 3000); })
-        .getRawExportData(enteredId.trim(), mode, activeEpiWeekStr);
+        .getRawExportData(authId, selectedExpectedCode, type, p1, p2);
     }
 
     function triggerDownload(res) {
       let exportMsg = document.getElementById('exportMessage');
       
       if (!res.success) {
-        exportMsg.innerText = res.error || 'Failed';
+        alert(res.error);
+        exportMsg.innerText = 'Authentication Failed';
         setTimeout(() => { exportMsg.innerText = ''; }, 3000);
         return;
       }
