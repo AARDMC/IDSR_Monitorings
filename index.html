@@ -280,11 +280,8 @@
       <span id="weekLabel" class="text-muted fw-bold me-1" style="font-size: 0.85rem;"></span>
       <select class="form-select text-primary" id="weekDropdown" onchange="selectWeek(this.value)" style="width: auto;"></select>
       
-      <select class="form-select facility-filter" id="facilityTypeFilter" onchange="applyFilters()" style="width: auto;">
-        <option value="all">All Facilities</option>
-        <option value="health_center">Health Centers</option>
-        <option value="hospital">Hospitals</option>
-        <option value="public_hospital">Public Hospitals</option>
+      <select class="form-select text-primary" id="subCityFilter" style="width: auto;">
+        <!-- Populated via JS -->
       </select>
       
       <div class="dropdown">
@@ -385,13 +382,15 @@
           getCurrentEpiWeekInfo: function() { this._call('getCurrentEpiWeekInfo', []); },
           fetchDashboardData: function(code, week) { this._call('fetchDashboardData', [code, week]); },
           getExportWeekCSV: function(...args) { this._call('getExportWeekCSV', args); },
-          getExportRangeCSV: function(...args) { this._call('getExportRangeCSV', args); }
+          getExportRangeCSV: function(...args) { this._call('getExportRangeCSV', args); },
+          getRawExportData: function(...args) { this._call('getRawExportData', args); },
+          getSubCities: function() { this._call('getSubCities', []); }
         }
       }
     };
 
     // =========================================================
-    // ORIGINAL JAVASCRIPT (100% UNCHANGED)
+    // ORIGINAL JAVASCRIPT (100% UNCHANGED EXCEPT REQUESTED NEW FILTERING)
     // =========================================================
     Chart.register(ChartDataLabels);
 
@@ -404,6 +403,22 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       populateWeekDropdownWithDefault();
+      
+      // Populate Sub Cities drop down for export filtering
+      google.script.run
+        .withSuccessHandler(function(codes) {
+           let select = document.getElementById('subCityFilter');
+           let html = '';
+           for (let code in codes) {
+               let name = codes[code];
+               if (name === "REGION") name = "Addis Ababa PHEM";
+               let selected = (code === "Addis_RDMC") ? "selected" : "";
+               html += `<option value="${code}" ${selected}>${name}</option>`;
+           }
+           select.innerHTML = html;
+        })
+        .getSubCities();
+        
       google.script.run
         .withSuccessHandler(function(weekInfo) {
           activeWeekNumber = weekInfo.weekNum;
@@ -461,32 +476,6 @@
       google.script.run.withSuccessHandler(renderDashboard).fetchDashboardData(currentSessionCode, activeEpiWeekStr);
     }
 
-    function applyFilters() { 
-      let filterType = document.getElementById('facilityTypeFilter').value;
-      if (filterType === 'all') {
-        renderTableRows(allDashboardData, isRegionalView);
-        return;
-      }
-      let filteredData = allDashboardData.map(zoneObj => {
-        let newObj = JSON.parse(JSON.stringify(zoneObj));
-        newObj.ReportedList = newObj.ReportedList.filter(f => matchesFilter(f, filterType));
-        newObj.NotReportedList = newObj.NotReportedList.filter(f => matchesFilter(f, filterType));
-        newObj.Expected = newObj.ReportedList.length + newObj.NotReportedList.length;
-        newObj.Reported = newObj.ReportedList.length;
-        return newObj;
-      }).filter(zoneObj => zoneObj.Expected > 0);
-
-      renderTableRows(filteredData, isRegionalView);
-    }
-
-    function matchesFilter(facilityName, filterType) {
-      let fLower = facilityName.toLowerCase();
-      if (filterType === 'health_center') return fLower.includes('hc') || fLower.includes('health center') || fLower.includes('clinic');
-      if (filterType === 'hospital') return fLower.includes('hospital');
-      if (filterType === 'public_hospital') return fLower.includes('hospital') && !fLower.includes('private') && !fLower.includes('general clinic');
-      return true;
-    }
-
     function renderDashboard(response) {
       hideLoader();
       let screen = document.getElementById('dashboardScreen');
@@ -500,7 +489,6 @@
 
       isRegionalView = response.isMaster;
       allDashboardData = response.data; 
-      document.getElementById('facilityTypeFilter').value = 'all';
       renderTableRows(allDashboardData, response.isMaster);
     }
 
@@ -808,20 +796,12 @@
       let exportMsg = document.getElementById('exportMessage');
       exportMsg.innerText = 'Preparing Export...';
       
-      const year = new Date().getFullYear();
-      let selectedFacilityType = document.getElementById('facilityTypeFilter').value;
+      let selectedSubCityCode = document.getElementById('subCityFilter').value || currentSessionCode;
       
-      if(mode === 'single') {
-        google.script.run
-          .withSuccessHandler(triggerDownload)
-          .withFailureHandler(() => exportMsg.innerText = 'Export Failed')
-          .getExportWeekCSV(activeWeekNumber, year, null, null, selectedFacilityType === 'all' ? null : selectedFacilityType);
-      } else {
-        google.script.run
-          .withSuccessHandler(triggerDownload)
-          .withFailureHandler(() => exportMsg.innerText = 'Export Failed')
-          .getExportRangeCSV(1, activeWeekNumber, year, null, null, selectedFacilityType === 'all' ? null : selectedFacilityType);
-      }
+      google.script.run
+        .withSuccessHandler(triggerDownload)
+        .withFailureHandler(() => exportMsg.innerText = 'Export Failed')
+        .getRawExportData(selectedSubCityCode, mode, activeEpiWeekStr);
     }
 
     function triggerDownload(csvContent) {
