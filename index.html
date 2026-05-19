@@ -36,7 +36,6 @@
       margin: 0;
       padding: 0;
       
-      /* DEFAULT PC BEHAVIOR: LOCKED SCREEN */
       height: 100vh;
       width: 100vw;
       display: flex;
@@ -62,31 +61,18 @@
 
     .controls-wrapper { display: flex; gap: 8px; align-items: center; }
     
-    /* FIX: Prevent dropdown text from overlapping the arrow */
     .form-select { 
-      font-size: 0.85rem; 
-      padding-top: 4px; 
-      padding-bottom: 4px; 
-      padding-left: 10px; 
-      padding-right: 32px !important; /* Forces room for the dropdown arrow */
-      border-radius: 6px; 
-      font-weight: 600; 
-      height: 34px; 
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-      text-overflow: ellipsis;
+      font-size: 0.85rem; padding-top: 4px; padding-bottom: 4px; 
+      padding-left: 10px; padding-right: 32px !important; 
+      border-radius: 6px; font-weight: 600; height: 34px; 
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05); text-overflow: ellipsis;
     }
     
     .btn { font-size: 0.85rem; padding: 4px 10px; border-radius: 6px; font-weight: 600; height: 34px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
 
     /* WORKSPACE */
     .main-workspace {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 12px;
-      gap: 12px;
-      min-height: 0;
-      overflow: hidden;
+      flex: 1; display: flex; flex-direction: column; padding: 12px; gap: 12px; min-height: 0; overflow: hidden;
     }
 
     /* KPI CARDS */
@@ -95,43 +81,30 @@
       flex: 1; border-radius: 10px; padding: 6px 14px; 
       box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
       display: flex; flex-direction: column; justify-content: center; 
-      border: none; position: relative; overflow: hidden;
-      color: white;
+      border: none; position: relative; overflow: hidden; color: white;
     }
     .kpi-card.expected { background: linear-gradient(135deg, #475569 0%, #334155 100%); }
     .kpi-card.reported { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
     .kpi-card.alerts { background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%); }
 
-    /* STRICT 100% COLORS FOR CARDS */
-    .gradient-100 { background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important; } /* Green ONLY for 100 */
-    .gradient-80  { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important; } /* Blue */
-    .gradient-50  { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%) !important; } /* Orange */
-    .gradient-low { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important; } /* Red */
+    .gradient-100 { background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important; }
+    .gradient-80  { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important; }
+    .gradient-50  { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%) !important; }
+    .gradient-low { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important; }
 
     .kpi-card::after {
       content: ''; position: absolute; right: -10px; bottom: -10px;
-      width: 50px; height: 50px; background: rgba(255,255,255,0.15);
-      border-radius: 50%;
+      width: 50px; height: 50px; background: rgba(255,255,255,0.15); border-radius: 50%;
     }
 
     .kpi-label { font-size: 0.75rem; color: rgba(255,255,255,0.85); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;}
     .kpi-value { font-size: 1.25rem; font-weight: 800; color: #ffffff !important; line-height: 1.1; margin-top: 2px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);}
 
-    /* CHARTS */
+    /* CHARTS & ACCORDION */
     .analytics-row { display: flex; gap: 12px; flex-shrink: 0; height: clamp(220px, 32vh, 280px); }
-    .chart-panel {
-      flex: 1; background: var(--card-bg); border-radius: 12px; padding: 12px;
-      border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-      display: flex; flex-direction: column;
-    }
+    .chart-panel { flex: 1; background: var(--card-bg); border-radius: 12px; padding: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
     .chart-wrapper { flex: 1; position: relative; min-height: 0; width: 100%; }
-
-    /* ACCORDION AREA */
-    .data-panel {
-      flex: 1; min-height: 0; background: var(--card-bg); border-radius: 12px;
-      border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-      display: flex; flex-direction: column; overflow: hidden;
-    }
+    .data-panel { flex: 1; min-height: 0; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; }
     .data-panel-header { padding: 12px 16px; border-bottom: 2px solid var(--border-color); background: #f8fafc; font-weight: 700; font-size: 1rem; color: #0f172a; flex-shrink: 0; }
     .data-panel-content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px; background: #f1f5f9; }
     
@@ -140,63 +113,31 @@
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-    /* ACCORDION BUTTONS */
     .accordion-item { border: none !important; background: transparent; margin-bottom: 10px; }
-    .accordion-button { 
-      font-size: 0.95rem; font-weight: 700; padding: 14px 16px; 
-      border-radius: 10px !important; border: 1px solid var(--border-color);
-      background-color: var(--card-bg); box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-      transition: all 0.2s ease; color: #334155;
-    }
+    .accordion-button { font-size: 0.95rem; font-weight: 700; padding: 14px 16px; border-radius: 10px !important; border: 1px solid var(--border-color); background-color: var(--card-bg); box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: all 0.2s ease; color: #334155; }
     .accordion-button:hover { background-color: #f1f5f9; border-color: #cbd5e1; transform: translateY(-1px); }
-    .accordion-button:not(.collapsed) { 
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; 
-      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); border: none;
-    }
+    .accordion-button:not(.collapsed) { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); border: none; }
     .accordion-button:not(.collapsed)::after { filter: brightness(0) invert(1); }
-    
-    /* HOSPITAL CARD */
-    .hospital-card .accordion-button {
-      background: linear-gradient(to right, #fdf2f8, #ffffff);
-      border: 1px solid #fbcfe8; color: #be185d; border-left: 5px solid #ec4899;
-    }
+    .hospital-card .accordion-button { background: linear-gradient(to right, #fdf2f8, #ffffff); border: 1px solid #fbcfe8; color: #be185d; border-left: 5px solid #ec4899; }
     .hospital-card .accordion-button:hover { background: #fce7f3; }
-    .hospital-card .accordion-button:not(.collapsed) {
-      background: linear-gradient(135deg, #ec4899, #9d174d);
-      color: white; border: none; box-shadow: 0 4px 10px rgba(236, 72, 153, 0.4);
-    }
-    
-    .accordion-button:not(.collapsed) .badge {
-      background-color: rgba(255,255,255,0.2) !important;
-      color: white !important; border: 1px solid rgba(255,255,255,0.4); box-shadow: none !important;
-    }
-
+    .hospital-card .accordion-button:not(.collapsed) { background: linear-gradient(135deg, #ec4899, #9d174d); color: white; border: none; box-shadow: 0 4px 10px rgba(236, 72, 153, 0.4); }
+    .accordion-button:not(.collapsed) .badge { background-color: rgba(255,255,255,0.2) !important; color: white !important; border: 1px solid rgba(255,255,255,0.4); box-shadow: none !important; }
     .accordion-collapse { border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 10px 10px; background: white; margin-top: -4px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
     
-    /* TABLE */
     .table { margin-bottom: 0; }
     .table thead th { background: #f8fafc; font-size: 0.85rem; padding: 12px 10px; border-bottom: 2px solid #e2e8f0; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;}
     .table tbody td { font-size: 0.85rem; padding: 10px; vertical-align: middle; color: #1e293b; font-weight: 500;}
     .grand-total-row td { background-color: #f1f5f9 !important; font-weight: 800; border-top: 2px solid #94a3b8; color: #0f172a;}
     
     .badge { font-size: 0.8rem; padding: 6px 10px; border-radius: 6px; font-weight: 700; letter-spacing: 0.3px;}
+    .bg-100 { background-color: #10b981 !important; color: white !important; } 
+    .bg-80  { background-color: #3b82f6 !important; color: white !important; } 
+    .bg-50  { background-color: #f59e0b !important; color: #fff !important; } 
+    .bg-low { background-color: #ef4444 !important; color: white !important; } 
 
-    /* STRICT PERCENTAGE COLORS FOR BADGES */
-    .bg-100 { background-color: #10b981 !important; color: white !important; } /* Green ONLY for 100 */
-    .bg-80  { background-color: #3b82f6 !important; color: white !important; } /* Blue */
-    .bg-50  { background-color: #f59e0b !important; color: #fff !important; } /* Orange */
-    .bg-low { background-color: #ef4444 !important; color: white !important; } /* Red */
-
-    /* HOVER TOOLTIPS */
     .hover-wrapper { position: relative; display: inline-flex; align-items: center; cursor: pointer; color: var(--primary); font-weight: 700; }
     .hover-wrapper:hover { text-decoration: underline; }
-    .hover-content {
-      visibility: hidden; opacity: 0; position: absolute; z-index: 1050;
-      background-color: #0f172a; color: white; border-radius: 10px; padding: 12px;
-      min-width: 260px; max-width: 320px; max-height: 220px; overflow-y: auto;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5); transition: opacity 0.2s ease, visibility 0.2s ease;
-      bottom: 120%; left: 50%; transform: translateX(-50%); font-weight: normal; border: 1px solid #334155;
-    }
+    .hover-content { visibility: hidden; opacity: 0; position: absolute; z-index: 1050; background-color: #0f172a; color: white; border-radius: 10px; padding: 12px; min-width: 260px; max-width: 320px; max-height: 220px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5); transition: opacity 0.2s ease, visibility 0.2s ease; bottom: 120%; left: 50%; transform: translateX(-50%); font-weight: normal; border: 1px solid #334155; }
     .hover-content::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -10px; border-width: 10px; border-style: solid; border-color: #0f172a transparent transparent transparent; }
     .hover-wrapper:hover .hover-content, .hover-content:hover { visibility: visible; opacity: 1; }
 
@@ -209,62 +150,18 @@
     .spinner { width: 45px; height: 45px; border: 5px solid #e2e8f0; border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
-    /* =========================================================
-       📱 MOBILE RESPONSIVENESS (PHONES & SMALL TABLETS)
-       ========================================================= */
     @media (max-width: 768px) {
-      body {
-        height: auto; 
-        overflow: auto; 
-        display: block;
-      }
-      .top-header {
-        flex-direction: column;
-        height: auto;
-        padding: 15px;
-        gap: 12px;
-        text-align: center;
-      }
-      .controls-wrapper {
-        flex-wrap: wrap;
-        justify-content: center;
-        width: 100%;
-      }
-      .main-workspace {
-        display: block;
-        overflow: visible; 
-        padding: 10px;
-      }
-      .kpi-row {
-        flex-wrap: wrap; 
-        height: auto;
-      }
-      .kpi-card {
-        flex: 1 1 calc(50% - 12px); 
-        min-width: 140px;
-        padding: 12px;
-      }
-      .analytics-row {
-        height: 350px; 
-        margin-bottom: 15px;
-      }
-      .data-panel {
-        display: block;
-        overflow: visible;
-      }
-      .data-panel-content {
-        overflow: visible; 
-        padding: 0; 
-        background: transparent;
-      }
-      .accordion-button .d-flex {
-        flex-direction: column;
-        align-items: flex-start !important;
-        gap: 8px;
-      }
-      .accordion-button .ms-auto {
-        margin-left: 0 !important;
-      }
+      body { height: auto; overflow: auto; display: block; }
+      .top-header { flex-direction: column; height: auto; padding: 15px; gap: 12px; text-align: center; }
+      .controls-wrapper { flex-wrap: wrap; justify-content: center; width: 100%; }
+      .main-workspace { display: block; overflow: visible; padding: 10px; }
+      .kpi-row { flex-wrap: wrap; height: auto; }
+      .kpi-card { flex: 1 1 calc(50% - 12px); min-width: 140px; padding: 12px; }
+      .analytics-row { height: 350px; margin-bottom: 15px; }
+      .data-panel { display: block; overflow: visible; }
+      .data-panel-content { overflow: visible; padding: 0; background: transparent; }
+      .accordion-button .d-flex { flex-direction: column; align-items: flex-start !important; gap: 8px; }
+      .accordion-button .ms-auto { margin-left: 0 !important; }
     }
   </style>
 </head>
@@ -364,11 +261,11 @@
           _call: function(action, args) {
             const onSuccess = this._success;
             const onFailure = this._failure;
-            this._success = null; this._failure = null; // Reset for next chained call
+            this._success = null; this._failure = null; 
 
             fetch(WEB_APP_URL, {
               method: 'POST',
-              headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Prevents CORS preflight
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
               body: JSON.stringify({ action: action, args: args })
             })
             .then(res => res.json())
@@ -378,20 +275,14 @@
             })
             .catch(err => { if (onFailure) onFailure(err); else console.error(err); });
           },
-          // Map the frontend's server calls to the REST API wrapper
           getCurrentEpiWeekInfo: function() { this._call('getCurrentEpiWeekInfo', []); },
           fetchDashboardData: function(code, week) { this._call('fetchDashboardData', [code, week]); },
-          getExportWeekCSV: function(...args) { this._call('getExportWeekCSV', args); },
-          getExportRangeCSV: function(...args) { this._call('getExportRangeCSV', args); },
           getRawExportData: function(...args) { this._call('getRawExportData', args); },
           getSubCities: function() { this._call('getSubCities', []); }
         }
       }
     };
 
-    // =========================================================
-    // ORIGINAL JAVASCRIPT (100% UNCHANGED EXCEPT REQUESTED NEW FILTERING)
-    // =========================================================
     Chart.register(ChartDataLabels);
 
     let currentSessionCode = "Addis_RDMC"; 
@@ -404,7 +295,6 @@
     document.addEventListener("DOMContentLoaded", () => {
       populateWeekDropdownWithDefault();
       
-      // Populate Sub Cities drop down for export filtering
       google.script.run
         .withSuccessHandler(function(codes) {
            let select = document.getElementById('subCityFilter');
@@ -492,12 +382,11 @@
       renderTableRows(allDashboardData, response.isMaster);
     }
 
-    // STRICT 100% COLOR LOGIC
     function getScoreClass(score) {
-      if (score >= 100) return 'gradient-100'; // Green ONLY for exactly 100
-      if (score >= 80)  return 'gradient-80';  // Blue
-      if (score >= 50)  return 'gradient-50';  // Orange
-      return 'gradient-low';                   // Red
+      if (score >= 100) return 'gradient-100'; 
+      if (score >= 80)  return 'gradient-80';  
+      if (score >= 50)  return 'gradient-50';  
+      return 'gradient-low';                   
     }
     
     function getBadgeClass(score) {
@@ -507,17 +396,13 @@
       return 'bg-low';
     }
 
-    // FIREWORKS POPUP FUNCTION
     function triggerFirePopup() {
       var duration = 3000;
       var end = Date.now() + duration;
-
       (function frame() {
         confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#10b981', '#3b82f6', '#f59e0b'] });
         confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#10b981', '#3b82f6', '#f59e0b'] });
-        if (Date.now() < end) {
-          requestAnimationFrame(frame);
-        }
+        if (Date.now() < end) requestAnimationFrame(frame);
       }());
     }
 
@@ -571,11 +456,9 @@
       document.getElementById('kpiTimeliness').innerText = globalTime.toFixed(1) + '%';
       document.getElementById('kpiAlerts').innerText = kpi.deaths;
 
-      // Apply dynamic colors to KPI cards
       document.getElementById('kpiCompCard').className = `kpi-card ${getScoreClass(globalComp)}`;
       document.getElementById('kpiTimeCard').className = `kpi-card ${getScoreClass(globalTime)}`;
 
-      // FIREWORKS TRIGGER (Only if both are exactly 100)
       if (globalComp === 100 && globalTime === 100) {
         triggerFirePopup();
       }
@@ -704,7 +587,6 @@
         compData.push(cVal);
         timeData.push(tVal);
         
-        // Strict 100% logic for Chart Bars
         compColors.push(cVal >= 100 ? '#10b981' : (cVal >= 80 ? '#3b82f6' : (cVal >= 50 ? '#f59e0b' : '#ef4444')));
         timeColors.push(tVal >= 100 ? '#10b981' : (tVal >= 80 ? '#3b82f6' : (tVal >= 50 ? '#f59e0b' : '#ef4444')));
       });
@@ -754,22 +636,14 @@
         },
         options: {
           responsive: true, maintainAspectRatio: false,
-          
-          // FIX: The layout padding prevents chart text from overlapping the top of the canvas
           layout: { padding: { top: 35 } }, 
-          
           interaction: { mode: 'index', intersect: false },
           scales: {
-            
-            // FIX: Max is set to 120 so 100% bars have empty space above them for the label to sit in.
-            // A callback is used so that the number "120" doesn't actually draw on the axis line.
             y: { 
-                beginAtZero: true, 
-                max: 120, 
+                beginAtZero: true, max: 120, 
                 grid: { borderDash: [4, 4], color: '#e2e8f0' }, 
                 ticks: { 
-                    font: { size: 12, weight: 'bold' }, 
-                    stepSize: 20,
+                    font: { size: 12, weight: 'bold' }, stepSize: 20,
                     callback: function(value) { return value <= 100 ? value : ''; }
                 } 
             },
@@ -777,15 +651,8 @@
           },
           plugins: { 
             legend: { 
-              position: 'top', 
-              align: 'center', 
-              labels: { 
-                // FIX: This padding forces the legend UP and away from the chart bars so they never overlap.
-                padding: 20, 
-                usePointStyle: true, 
-                boxWidth: 12, 
-                font: { size: 12, weight: 'bold' } 
-              } 
+              position: 'top', align: 'center', 
+              labels: { padding: 20, usePointStyle: true, boxWidth: 12, font: { size: 12, weight: 'bold' } } 
             }
           }
         }
@@ -793,19 +660,40 @@
     }
 
     function downloadCSV(mode) {
-      let exportMsg = document.getElementById('exportMessage');
-      exportMsg.innerText = 'Preparing Export...';
+      let subCitySelect = document.getElementById('subCityFilter');
+      let expectedCode = subCitySelect.value;
+      let selectedName = subCitySelect.options[subCitySelect.selectedIndex].text;
       
-      let selectedSubCityCode = document.getElementById('subCityFilter').value || currentSessionCode;
+      // ⚡ REQUIRED SECURITY PROMPT: User MUST enter Sub City ID to download
+      let enteredId = prompt(`Authorization Required:\nPlease enter the Sub City ID for ${selectedName}:`);
+      
+      if (!enteredId) return; // User cancelled
+      
+      // Verification Step
+      if (enteredId.trim() !== expectedCode && enteredId.trim() !== "Addis_RDMC") {
+        alert("Authentication Failed: Incorrect Sub City ID entered.");
+        return;
+      }
+
+      let exportMsg = document.getElementById('exportMessage');
+      exportMsg.innerText = 'Preparing Download...';
       
       google.script.run
         .withSuccessHandler(triggerDownload)
-        .withFailureHandler(() => exportMsg.innerText = 'Export Failed')
-        .getRawExportData(selectedSubCityCode, mode, activeEpiWeekStr);
+        .withFailureHandler(() => { exportMsg.innerText = 'Export Failed'; setTimeout(() => { exportMsg.innerText = ''; }, 3000); })
+        .getRawExportData(enteredId.trim(), mode, activeEpiWeekStr);
     }
 
-    function triggerDownload(csvContent) {
+    function triggerDownload(res) {
       let exportMsg = document.getElementById('exportMessage');
+      
+      if (!res.success) {
+        exportMsg.innerText = res.error || 'Failed';
+        setTimeout(() => { exportMsg.innerText = ''; }, 3000);
+        return;
+      }
+      
+      let csvContent = res.csvContent;
       if (!csvContent || csvContent.trim() === "") {
         exportMsg.innerText = 'No Data Found';
         setTimeout(() => { exportMsg.innerText = ''; }, 3000);
@@ -816,7 +704,7 @@
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url; 
-        link.setAttribute('download', `Dashboard_Export_${activeEpiWeekStr}.csv`);
+        link.setAttribute('download', res.fileName);
         document.body.appendChild(link); link.click();
         setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 200);
         exportMsg.innerText = 'Download Complete';
