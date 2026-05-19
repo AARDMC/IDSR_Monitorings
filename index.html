@@ -161,7 +161,10 @@
       <span id="weekLabel" class="text-muted fw-bold me-1" style="font-size: 0.85rem;"></span>
       <select class="form-select text-primary" id="weekDropdown" onchange="selectWeek(this.value)" style="width: auto;"></select>
       
-      <select class="form-select text-primary" id="subCityFilter" style="width: auto;"></select>
+      <!-- FIX: Removed default selection, added 'Select Sub City' placeholder -->
+      <select class="form-select text-primary" id="subCityFilter" style="width: auto;">
+        <option value="" disabled selected>Select Sub City</option>
+      </select>
       
       <button class="btn btn-primary d-flex align-items-center fw-bold shadow-sm" type="button" onclick="openExportModal()">
         <i class="bi bi-cloud-arrow-down-fill me-2"></i> Export Data
@@ -230,7 +233,6 @@
         <div class="modal-body p-4">
           <div class="mb-4">
             <label class="form-label fw-bold text-secondary" style="font-size: 0.85rem; text-transform: uppercase;">Sub City ID <span class="text-danger">*</span></label>
-            <!-- FIX: Changed type from "password" to "text" and added autocomplete="off" -->
             <input type="text" autocomplete="off" class="form-control form-control-lg fs-6 shadow-sm" id="exportAuthId" placeholder="Enter ID to authorize download">
           </div>
           <div class="mb-3">
@@ -319,7 +321,7 @@
       google.script.run
         .withSuccessHandler(function(codes) {
            let select = document.getElementById('subCityFilter');
-           let html = '';
+           let html = '<option value="" disabled selected>Select Sub City</option>';
            let seenNames = new Set();
            
            for (let code in codes) {
@@ -328,8 +330,7 @@
                
                if (!seenNames.has(name.toLowerCase())) {
                    seenNames.add(name.toLowerCase());
-                   let selected = (code === "Addis_RDMC") ? "selected" : "";
-                   html += `<option value="${code}" ${selected}>${name}</option>`;
+                   html += `<option value="${code}">${name}</option>`;
                }
            }
            select.innerHTML = html;
@@ -693,6 +694,13 @@
     }
 
     function openExportModal() {
+      // FIX: Require user to select a Sub City before allowing export
+      let subCitySelect = document.getElementById('subCityFilter');
+      if (!subCitySelect.value) {
+         alert("Please select a Sub City from the dropdown first.");
+         return;
+      }
+      
       let html = '';
       for (let i = 1; i <= 52; i++) { html += `<option value="${i}">Week ${i}</option>`; }
       document.getElementById('exportFromWeek').innerHTML = html;
@@ -711,7 +719,7 @@
     function executeExport() {
       let authId = document.getElementById('exportAuthId').value.trim();
       let type = document.getElementById('exportType').value;
-      let selectedExpectedCode = document.getElementById('subCityFilter').value || currentSessionCode;
+      let selectedExpectedCode = document.getElementById('subCityFilter').value;
       
       if (!authId) {
           alert("Authorization ID is required to download.");
