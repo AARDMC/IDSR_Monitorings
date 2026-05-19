@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base target="_top">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <style>
+    /* STRICT RESET & VARIABLES */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --primary: #2563eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --border-color: #e2e8f0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+      font-size: 0.95rem; 
+      margin: 0;
+      padding: 0;
+      
+      /* DEFAULT PC BEHAVIOR: LOCKED SCREEN */
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* HEADER */
+    .top-header {
+      background: var(--card-bg);
+      padding: 10px 16px;
+      border-bottom: 2px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      flex-shrink: 0;
+      height: 65px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+    .brand-title { margin: 0; font-weight: 800; font-size: 1.25rem; color: #0f172a; line-height: 1.2; letter-spacing: -0.5px;}
+    .brand-subtitle { margin: 0; font-size: 0.75rem; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+    .controls-wrapper { display: flex; gap: 8px; align-items: center; }
+    
+    /* FIX: Prevent dropdown text from overlapping the arrow */
+    .form-select { 
+      font-size: 0.85rem; 
+      padding-top: 4px; 
+      padding-bottom: 4px; 
+      padding-left: 10px; 
+      padding-right: 32px !important; /* Forces room for the dropdown arrow */
+      border-radius: 6px; 
+      font-weight: 600; 
+      height: 34px; 
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      text-overflow: ellipsis;
+    }
+    
+    .btn { font-size: 0.85rem; padding: 4px 10px; border-radius: 6px; font-weight: 600; height: 34px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
+
+    /* WORKSPACE */
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      gap: 12px;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* KPI CARDS */
+    .kpi-row { display: flex; gap: 12px; flex-shrink: 0; height: 60px; }
+    .kpi-card {
+      flex: 1; border-radius: 10px; padding: 6px 14px; 
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+      display: flex; flex-direction: column; justify-content: center; 
+      border: none; position: relative; overflow: hidden;
+      color: white;
+    }
+    .kpi-card.expected { background: linear-gradient(135deg, #475569 0%, #334155 100%); }
+    .kpi-card.reported { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
+    .kpi-card.alerts { background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%); }
+
+    /* STRICT 100% COLORS FOR CARDS */
+    .gradient-100 { background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important; } /* Green ONLY for 100 */
+    .gradient-80  { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important; } /* Blue */
+    .gradient-50  { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%) !important; } /* Orange */
+    .gradient-low { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important; } /* Red */
+
+    .kpi-card::after {
+      content: ''; position: absolute; right: -10px; bottom: -10px;
+      width: 50px; height: 50px; background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+    }
+
+    .kpi-label { font-size: 0.75rem; color: rgba(255,255,255,0.85); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;}
+    .kpi-value { font-size: 1.25rem; font-weight: 800; color: #ffffff !important; line-height: 1.1; margin-top: 2px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);}
+
+    /* CHARTS */
+    .analytics-row { display: flex; gap: 12px; flex-shrink: 0; height: clamp(220px, 32vh, 280px); }
+    .chart-panel {
+      flex: 1; background: var(--card-bg); border-radius: 12px; padding: 12px;
+      border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      display: flex; flex-direction: column;
+    }
+    .chart-wrapper { flex: 1; position: relative; min-height: 0; width: 100%; }
+
+    /* ACCORDION AREA */
+    .data-panel {
+      flex: 1; min-height: 0; background: var(--card-bg); border-radius: 12px;
+      border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .data-panel-header { padding: 12px 16px; border-bottom: 2px solid var(--border-color); background: #f8fafc; font-weight: 700; font-size: 1rem; color: #0f172a; flex-shrink: 0; }
+    .data-panel-content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px; background: #f1f5f9; }
+    
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    /* ACCORDION BUTTONS */
+    .accordion-item { border: none !important; background: transparent; margin-bottom: 10px; }
+    .accordion-button { 
+      font-size: 0.95rem; font-weight: 700; padding: 14px 16px; 
+      border-radius: 10px !important; border: 1px solid var(--border-color);
+      background-color: var(--card-bg); box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      transition: all 0.2s ease; color: #334155;
+    }
+    .accordion-button:hover { background-color: #f1f5f9; border-color: #cbd5e1; transform: translateY(-1px); }
+    .accordion-button:not(.collapsed) { 
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; 
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); border: none;
+    }
+    .accordion-button:not(.collapsed)::after { filter: brightness(0) invert(1); }
+    
+    /* HOSPITAL CARD */
+    .hospital-card .accordion-button {
+      background: linear-gradient(to right, #fdf2f8, #ffffff);
+      border: 1px solid #fbcfe8; color: #be185d; border-left: 5px solid #ec4899;
+    }
+    .hospital-card .accordion-button:hover { background: #fce7f3; }
+    .hospital-card .accordion-button:not(.collapsed) {
+      background: linear-gradient(135deg, #ec4899, #9d174d);
+      color: white; border: none; box-shadow: 0 4px 10px rgba(236, 72, 153, 0.4);
+    }
+    
+    .accordion-button:not(.collapsed) .badge {
+      background-color: rgba(255,255,255,0.2) !important;
+      color: white !important; border: 1px solid rgba(255,255,255,0.4); box-shadow: none !important;
+    }
+
+    .accordion-collapse { border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 10px 10px; background: white; margin-top: -4px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    
+    /* TABLE */
+    .table { margin-bottom: 0; }
+    .table thead th { background: #f8fafc; font-size: 0.85rem; padding: 12px 10px; border-bottom: 2px solid #e2e8f0; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;}
+    .table tbody td { font-size: 0.85rem; padding: 10px; vertical-align: middle; color: #1e293b; font-weight: 500;}
+    .grand-total-row td { background-color: #f1f5f9 !important; font-weight: 800; border-top: 2px solid #94a3b8; color: #0f172a;}
+    
+    .badge { font-size: 0.8rem; padding: 6px 10px; border-radius: 6px; font-weight: 700; letter-spacing: 0.3px;}
+
+    /* STRICT PERCENTAGE COLORS FOR BADGES */
+    .bg-100 { background-color: #10b981 !important; color: white !important; } /* Green ONLY for 100 */
+    .bg-80  { background-color: #3b82f6 !important; color: white !important; } /* Blue */
+    .bg-50  { background-color: #f59e0b !important; color: #fff !important; } /* Orange */
+    .bg-low { background-color: #ef4444 !important; color: white !important; } /* Red */
+
+    /* HOVER TOOLTIPS */
+    .hover-wrapper { position: relative; display: inline-flex; align-items: center; cursor: pointer; color: var(--primary); font-weight: 700; }
+    .hover-wrapper:hover { text-decoration: underline; }
+    .hover-content {
+      visibility: hidden; opacity: 0; position: absolute; z-index: 1050;
+      background-color: #0f172a; color: white; border-radius: 10px; padding: 12px;
+      min-width: 260px; max-width: 320px; max-height: 220px; overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5); transition: opacity 0.2s ease, visibility 0.2s ease;
+      bottom: 120%; left: 50%; transform: translateX(-50%); font-weight: normal; border: 1px solid #334155;
+    }
+    .hover-content::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -10px; border-width: 10px; border-style: solid; border-color: #0f172a transparent transparent transparent; }
+    .hover-wrapper:hover .hover-content, .hover-content:hover { visibility: visible; opacity: 1; }
+
+    .reported-fac { color: #34d399; font-size: 0.8rem; margin-bottom: 4px; font-weight: 600;}
+    .missing-fac { color: #94a3b8; font-size: 0.8rem; margin-bottom: 4px; }
+    .badge-death { background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; padding: 4px 8px; border-radius: 12px; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);}
+    .death-item { color: #fca5a5; font-size: 0.85rem; margin-bottom: 4px; }
+
+    .loader-overlay { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
+    .spinner { width: 45px; height: 45px; border: 5px solid #e2e8f0; border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* =========================================================
+       📱 MOBILE RESPONSIVENESS (PHONES & SMALL TABLETS)
+       ========================================================= */
+    @media (max-width: 768px) {
+      body {
+        height: auto; 
+        overflow: auto; 
+        display: block;
+      }
+      .top-header {
+        flex-direction: column;
+        height: auto;
+        padding: 15px;
+        gap: 12px;
+        text-align: center;
+      }
+      .controls-wrapper {
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+      }
+      .main-workspace {
+        display: block;
+        overflow: visible; 
+        padding: 10px;
+      }
+      .kpi-row {
+        flex-wrap: wrap; 
+        height: auto;
+      }
+      .kpi-card {
+        flex: 1 1 calc(50% - 12px); 
+        min-width: 140px;
+        padding: 12px;
+      }
+      .analytics-row {
+        height: 350px; 
+        margin-bottom: 15px;
+      }
+      .data-panel {
+        display: block;
+        overflow: visible;
+      }
+      .data-panel-content {
+        overflow: visible; 
+        padding: 0; 
+        background: transparent;
+      }
+      .accordion-button .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 8px;
+      }
+      .accordion-button .ms-auto {
+        margin-left: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="top-header">
+    <div>
+      <h1 class="brand-title">Addis Ababa PHEM IDSR</h1>
+      <p class="brand-subtitle"><i class="bi bi-bar-chart-fill me-1"></i> Analytical Dashboard</p>
+    </div>
+    
+    <div class="controls-wrapper">
+      <span id="weekLabel" class="text-muted fw-bold me-1" style="font-size: 0.85rem;"></span>
+      <select class="form-select text-primary" id="weekDropdown" onchange="selectWeek(this.value)" style="width: auto;"></select>
+      
+      <select class="form-select facility-filter" id="facilityTypeFilter" onchange="applyFilters()" style="width: auto;">
+        <option value="all">All Facilities</option>
+        <option value="health_center">Health Centers</option>
+        <option value="hospital">Hospitals</option>
+        <option value="public_hospital">Public Hospitals</option>
+      </select>
+      
+      <div class="dropdown">
+        <button class="btn btn-primary d-flex align-items-center fw-bold" type="button" data-bs-toggle="dropdown">
+          <i class="bi bi-cloud-arrow-down-fill me-1"></i> Export
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow" style="font-size: 0.9rem; border-radius: 8px;">
+          <li><a class="dropdown-item fw-semibold" href="#" onclick="downloadCSV('single')"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i>Current Week</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item fw-semibold" href="#" onclick="downloadCSV('multiple')"><i class="bi bi-files text-primary me-2"></i>All Weeks (Range)</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-workspace" id="dashboardScreen" style="display: none; opacity: 0;">
+    
+    <div class="kpi-row">
+      <div class="kpi-card expected">
+        <span class="kpi-label"><i class="bi bi-building me-1"></i>Expected</span>
+        <span class="kpi-value" id="kpiExpected">0</span>
+      </div>
+      <div class="kpi-card reported">
+        <span class="kpi-label"><i class="bi bi-clipboard-check me-1"></i>Reported</span>
+        <span class="kpi-value" id="kpiReported">0</span>
+      </div>
+      <div class="kpi-card" id="kpiCompCard">
+        <span class="kpi-label"><i class="bi bi-pie-chart-fill me-1"></i>Completeness</span>
+        <span class="kpi-value" id="kpiCompleteness">0%</span>
+      </div>
+      <div class="kpi-card" id="kpiTimeCard">
+        <span class="kpi-label"><i class="bi bi-stopwatch-fill me-1"></i>Timeliness</span>
+        <span class="kpi-value" id="kpiTimeliness">0%</span>
+      </div>
+      <div class="kpi-card alerts">
+        <span class="kpi-label"><i class="bi bi-exclamation-triangle-fill me-1"></i>Alerts / Deaths</span>
+        <span class="kpi-value" id="kpiAlerts">0</span>
+      </div>
+    </div>
+
+    <div class="analytics-row">
+      <div class="chart-panel">
+        <h6 class="mb-2 text-center fw-bold text-slate-700" style="font-size: 0.9rem; text-transform: uppercase; color:#334155;">Completeness & Timeliness by Zone</h6>
+        <div class="chart-wrapper">
+          <canvas id="performanceChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="data-panel">
+      <div class="data-panel-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-list-nested me-2 text-primary"></i> Sub City & Hospital Breakdown</span>
+        <span id="exportMessage" class="badge bg-light text-primary border" style="font-size:0.8rem;"></span>
+      </div>
+      <div class="data-panel-content">
+        <div class="row g-3 accordion" id="zoneAccordion"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <div class="loader-overlay" id="loader">
+    <div class="spinner"></div>
+    <div class="fw-bold text-primary" id="loaderText" style="font-size: 1.1rem; letter-spacing: 0.5px;">Initializing Analytics...</div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // =========================================================
+    // GAS to REST API BRIDGE (Mocks google.script.run for GitHub)
+    // =========================================================
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyfvo2nds6snWL28sterhz9XnUgJXic3EG8upw_d0D13jfusQiPbDUoYXfvyYLnr3OCug/exec";
+
+    const google = {
+      script: {
+        run: {
+          withSuccessHandler: function(callback) { this._success = callback; return this; },
+          withFailureHandler: function(callback) { this._failure = callback; return this; },
+          _call: function(action, args) {
+            const onSuccess = this._success;
+            const onFailure = this._failure;
+            this._success = null; this._failure = null; // Reset for next chained call
+
+            fetch(WEB_APP_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Prevents CORS preflight
+              body: JSON.stringify({ action: action, args: args })
+            })
+            .then(res => res.json())
+            .then(data => {
+              if (data.error) { if (onFailure) onFailure(data.error); else console.error(data.error); } 
+              else if (onSuccess) onSuccess(data.result);
+            })
+            .catch(err => { if (onFailure) onFailure(err); else console.error(err); });
+          },
+          // Map the frontend's server calls to the REST API wrapper
+          getCurrentEpiWeekInfo: function() { this._call('getCurrentEpiWeekInfo', []); },
+          fetchDashboardData: function(code, week) { this._call('fetchDashboardData', [code, week]); },
+          getExportWeekCSV: function(...args) { this._call('getExportWeekCSV', args); },
+          getExportRangeCSV: function(...args) { this._call('getExportRangeCSV', args); }
+        }
+      }
+    };
+
+    // =========================================================
+    // ORIGINAL JAVASCRIPT (100% UNCHANGED)
+    // =========================================================
+    Chart.register(ChartDataLabels);
+
+    let currentSessionCode = "Addis_RDMC"; 
+    let activeEpiWeekStr = "";
+    let activeWeekNumber = 1;
+    let allDashboardData = [];
+    let isRegionalView = true;
+    let chartPerformanceInstance = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      populateWeekDropdownWithDefault();
+      google.script.run
+        .withSuccessHandler(function(weekInfo) {
+          activeWeekNumber = weekInfo.weekNum;
+          activeEpiWeekStr = "Week " + weekInfo.weekNum;
+          document.getElementById('weekLabel').innerHTML = `<i class="bi bi-calendar-event me-1"></i> ${weekInfo.month} ${weekInfo.year}`;
+          document.getElementById('weekDropdown').value = weekInfo.weekNum;
+          fetchData();
+        })
+        .withFailureHandler(function(err) {
+          activeWeekNumber = calculateEpiWeekFallback();
+          activeEpiWeekStr = "Week " + activeWeekNumber;
+          document.getElementById('weekDropdown').value = activeWeekNumber;
+          fetchData();
+        })
+        .getCurrentEpiWeekInfo();
+    });
+
+    function calculateEpiWeekFallback() {
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      let daysToLastSaturday = dayOfWeek === 0 ? -1 : -(dayOfWeek);
+      const lastSaturday = new Date(today);
+      lastSaturday.setDate(today.getDate() + daysToLastSaturday);
+      const yearStart = new Date(lastSaturday.getFullYear(), 0, 1);
+      const dayOfYear = Math.floor((lastSaturday - yearStart) / (1000 * 60 * 60 * 24));
+      return Math.max(1, Math.min(52, Math.floor((dayOfYear + 10) / 7)));
+    }
+
+    function populateWeekDropdownWithDefault() {
+      const fallbackWeek = calculateEpiWeekFallback();
+      let dropdown = document.getElementById('weekDropdown');
+      let html = '';
+      for (let i = 1; i <= 52; i++) {
+         html += `<option value="${i}">Epi Week ${i}</option>`;
+      }
+      dropdown.innerHTML = html;
+      dropdown.value = fallbackWeek;
+    }
+
+    function showLoader(msg) {
+      document.getElementById('loaderText').innerText = msg;
+      document.getElementById('loader').style.display = 'flex';
+    }
+    function hideLoader() { document.getElementById('loader').style.display = 'none'; }
+
+    function selectWeek(weekNum) {
+      activeWeekNumber = parseInt(weekNum);
+      activeEpiWeekStr = "Week " + weekNum;
+      fetchData();
+    }
+
+    function fetchData() {
+      showLoader(`Fetching Data for ${activeEpiWeekStr}...`);
+      document.getElementById('dashboardScreen').style.opacity = '0.5';
+      google.script.run.withSuccessHandler(renderDashboard).fetchDashboardData(currentSessionCode, activeEpiWeekStr);
+    }
+
+    function applyFilters() { 
+      let filterType = document.getElementById('facilityTypeFilter').value;
+      if (filterType === 'all') {
+        renderTableRows(allDashboardData, isRegionalView);
+        return;
+      }
+      let filteredData = allDashboardData.map(zoneObj => {
+        let newObj = JSON.parse(JSON.stringify(zoneObj));
+        newObj.ReportedList = newObj.ReportedList.filter(f => matchesFilter(f, filterType));
+        newObj.NotReportedList = newObj.NotReportedList.filter(f => matchesFilter(f, filterType));
+        newObj.Expected = newObj.ReportedList.length + newObj.NotReportedList.length;
+        newObj.Reported = newObj.ReportedList.length;
+        return newObj;
+      }).filter(zoneObj => zoneObj.Expected > 0);
+
+      renderTableRows(filteredData, isRegionalView);
+    }
+
+    function matchesFilter(facilityName, filterType) {
+      let fLower = facilityName.toLowerCase();
+      if (filterType === 'health_center') return fLower.includes('hc') || fLower.includes('health center') || fLower.includes('clinic');
+      if (filterType === 'hospital') return fLower.includes('hospital');
+      if (filterType === 'public_hospital') return fLower.includes('hospital') && !fLower.includes('private') && !fLower.includes('general clinic');
+      return true;
+    }
+
+    function renderDashboard(response) {
+      hideLoader();
+      let screen = document.getElementById('dashboardScreen');
+      screen.style.display = 'flex';
+      screen.style.opacity = '1';
+      
+      if (!response.success) {
+        document.getElementById('zoneAccordion').innerHTML = `<div class="col-12 text-center py-5 text-muted"><i class="bi bi-exclamation-circle fs-2 d-block mb-2"></i> ${response.error}</div>`;
+        return;
+      }
+
+      isRegionalView = response.isMaster;
+      allDashboardData = response.data; 
+      document.getElementById('facilityTypeFilter').value = 'all';
+      renderTableRows(allDashboardData, response.isMaster);
+    }
+
+    // STRICT 100% COLOR LOGIC
+    function getScoreClass(score) {
+      if (score >= 100) return 'gradient-100'; // Green ONLY for exactly 100
+      if (score >= 80)  return 'gradient-80';  // Blue
+      if (score >= 50)  return 'gradient-50';  // Orange
+      return 'gradient-low';                   // Red
+    }
+    
+    function getBadgeClass(score) {
+      if (score >= 100) return 'bg-100';
+      if (score >= 80)  return 'bg-80';
+      if (score >= 50)  return 'bg-50';
+      return 'bg-low';
+    }
+
+    // FIREWORKS POPUP FUNCTION
+    function triggerFirePopup() {
+      var duration = 3000;
+      var end = Date.now() + duration;
+
+      (function frame() {
+        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#10b981', '#3b82f6', '#f59e0b'] });
+        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#10b981', '#3b82f6', '#f59e0b'] });
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      }());
+    }
+
+    function renderTableRows(data, isMaster) {
+      let accordionDiv = document.getElementById('zoneAccordion');
+      if (data.length === 0) {
+        accordionDiv.innerHTML = `<div class="col-12 text-center py-5 text-muted">No operational facilities mapped for this period.</div>`;
+        document.getElementById('kpiExpected').innerText = 0;
+        document.getElementById('kpiReported').innerText = 0;
+        document.getElementById('kpiCompleteness').innerText = '0%';
+        document.getElementById('kpiTimeliness').innerText = '0%';
+        document.getElementById('kpiAlerts').innerText = 0;
+        if (chartPerformanceInstance) chartPerformanceInstance.destroy();
+        return;
+      }
+
+      let groupedZones = {};
+      let zoneStats = {};
+      let kpi = { exp: 0, rep: 0, timeSum: 0, deaths: 0 };
+      
+      data.forEach(row => {
+        let zName = row.Zone;
+        if (!groupedZones[zName]) {
+          groupedZones[zName] = [];
+          zoneStats[zName] = { exp: 0, rep: 0, timeSum: 0, deaths: 0 };
+        }
+        groupedZones[zName].push(row);
+        
+        zoneStats[zName].exp += row.Expected;
+        zoneStats[zName].rep += row.Reported;
+        
+        let cleanRowTime = Math.min(100, row.Timeliness); 
+        zoneStats[zName].timeSum += (cleanRowTime * row.Reported);
+        zoneStats[zName].deaths += row.TotalDeaths;
+
+        kpi.exp += row.Expected;
+        kpi.rep += row.Reported;
+        kpi.timeSum += (cleanRowTime * row.Reported);
+        kpi.deaths += row.TotalDeaths;
+      });
+
+      let globalCompRaw = kpi.exp > 0 ? (kpi.rep / kpi.exp) * 100 : 0;
+      let globalTimeRaw = kpi.rep > 0 ? (kpi.timeSum / kpi.rep) : 0;
+      
+      let globalComp = Math.min(100, globalCompRaw);
+      let globalTime = Math.min(100, globalTimeRaw);
+      
+      document.getElementById('kpiExpected').innerText = kpi.exp;
+      document.getElementById('kpiReported').innerText = kpi.rep;
+      document.getElementById('kpiCompleteness').innerText = globalComp.toFixed(1) + '%';
+      document.getElementById('kpiTimeliness').innerText = globalTime.toFixed(1) + '%';
+      document.getElementById('kpiAlerts').innerText = kpi.deaths;
+
+      // Apply dynamic colors to KPI cards
+      document.getElementById('kpiCompCard').className = `kpi-card ${getScoreClass(globalComp)}`;
+      document.getElementById('kpiTimeCard').className = `kpi-card ${getScoreClass(globalTime)}`;
+
+      // FIREWORKS TRIGGER (Only if both are exactly 100)
+      if (globalComp === 100 && globalTime === 100) {
+        triggerFirePopup();
+      }
+
+      let html = '';
+      let index = 0;
+      
+      for (let z in groupedZones) {
+        index++;
+        let zData = groupedZones[z];
+        let stats = zoneStats[z];
+        
+        let rawComp = stats.exp > 0 ? (stats.rep / stats.exp) * 100 : 0;
+        let rawTime = stats.rep > 0 ? (stats.timeSum / stats.rep) : 0;
+        
+        let comp = Math.min(100, rawComp).toFixed(1);
+        let time = Math.min(100, rawTime).toFixed(1);
+        
+        let collapseId = 'collapseZone' + index;
+        let isHospitalCard = (z === "Public Hospitals");
+        let cardClass = isHospitalCard ? "hospital-card" : "";
+        let iconHtml = isHospitalCard ? `<i class="bi bi-hospital-fill me-2 fs-5"></i>` : `<i class="bi bi-geo-alt-fill me-2 text-primary"></i>`;
+        
+        html += `
+        <div class="col-lg-6 col-md-12">
+          <div class="accordion-item h-100 ${cardClass}">
+            <h2 class="accordion-header" id="heading${index}">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}">
+                <div class="d-flex w-100 align-items-center me-1">
+                  <span class="fw-bold text-truncate d-flex align-items-center" style="max-width:45%;">
+                    ${iconHtml} ${z}
+                  </span>
+                  <div class="ms-auto d-flex gap-2">
+                    <span class="badge ${getBadgeClass(rawComp)} shadow-sm">Completeness: ${comp}%</span>
+                    <span class="badge ${getBadgeClass(rawTime)} shadow-sm">Timeliness: ${time}%</span>
+                  </div>
+                </div>
+              </button>
+            </h2>
+            <div id="${collapseId}" class="accordion-collapse collapse" data-bs-parent="#zoneAccordion">
+              <div class="accordion-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover table-borderless table-sm">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th class="text-center">Expected</th>
+                        <th class="text-center">Reported</th>
+                        <th class="text-center">Completeness</th>
+                        <th class="text-center">Timeliness</th>
+                        <th class="text-center">Alerts</th>
+                      </tr>
+                    </thead>
+                    <tbody>`;
+                    
+        zData.forEach(row => {
+          let hoverContent = '';
+          if (row.ReportedList && row.ReportedList.length > 0) {
+             hoverContent += `<div><strong class='d-block pb-1 mb-2 border-bottom border-secondary'>Reported (${row.Reported})</strong>`;
+             hoverContent += `<div class='reported-fac'>✓ ${row.ReportedList.join("</div><div class='reported-fac'>✓ ")}</div></div>`;
+          }
+          if (row.NotReportedList && row.NotReportedList.length > 0) {
+             hoverContent += `<div class='mt-3'><strong class='d-block pb-1 mb-2 border-bottom border-secondary'>Missing (${row.Expected - row.Reported})</strong>`;
+             hoverContent += `<div class='missing-fac'>• ${row.NotReportedList.join("</div><div class='missing-fac'>• ")}</div></div>`;
+          }
+
+          let dContent = '<span class="text-muted">-</span>';
+          if (row.TotalDeaths > 0) {
+             let dTooltip = `<strong class='text-danger d-block pb-1 mb-2 border-bottom border-secondary'>Alerts / Deaths</strong>`;
+             if(row.DeathDetails) row.DeathDetails.forEach(d => { dTooltip += `<div class='death-item'><strong>${d.facility}:</strong> ${d.disease} (${d.count})</div>`; });
+             dContent = `<div class="hover-wrapper"><span class="badge-death">${row.TotalDeaths}</span><div class="hover-content text-start">${dTooltip}</div></div>`;
+          }
+
+          let rCompRaw = row.Completeness || 0;
+          let rTimeRaw = row.Timeliness || 0;
+          
+          let rowComp = Math.min(100, rCompRaw);
+          let rowTime = Math.min(100, rTimeRaw);
+
+          html += `<tr>
+            <td class="fw-bold text-main text-truncate" style="max-width: 150px;" title="${row.Woreda}">${row.Woreda}</td>
+            <td class="text-center fw-semibold">${row.Expected}</td>
+            <td class="text-center fw-semibold">
+              <div class="hover-wrapper">
+                <span>${row.Reported}</span>
+                <div class="hover-content text-start">${hoverContent}</div>
+              </div>
+            </td>
+            <td class="text-center"><span class="badge ${getBadgeClass(rCompRaw)}">${rowComp}%</span></td>
+            <td class="text-center"><span class="badge ${getBadgeClass(rTimeRaw)}">${rowTime}%</span></td>
+            <td class="text-center">${dContent}</td>
+          </tr>`;
+        });
+        
+        html += `<tr class="grand-total-row">
+            <td class="text-end text-uppercase">Total</td>
+            <td class="text-center">${stats.exp}</td>
+            <td class="text-center">${stats.rep}</td>
+            <td class="text-center">${comp}%</td>
+            <td class="text-center">${time}%</td>
+            <td class="text-center">${stats.deaths > 0 ? stats.deaths : '-'}</td>
+          </tr></tbody></table></div></div></div></div></div>`;
+      }
+      accordionDiv.innerHTML = html;
+      
+      renderAnalyticsCharts(zoneStats, kpi);
+    }
+
+    function renderAnalyticsCharts(zoneStats, globalKpi) {
+      let labels = [], compData = [], timeData = [];
+      let compColors = [], timeColors = [];
+      
+      let sortedZones = Object.keys(zoneStats).sort((a, b) => {
+        let compA = zoneStats[a].exp > 0 ? (zoneStats[a].rep / zoneStats[a].exp) : 0;
+        let compB = zoneStats[b].exp > 0 ? (zoneStats[b].rep / zoneStats[b].exp) : 0;
+        return compB - compA; 
+      });
+
+      sortedZones.forEach(z => {
+        labels.push(z.replace(" Sub City", "").replace("Hospitals", "Hosp."));
+        let s = zoneStats[z];
+        
+        let cVal = s.exp > 0 ? parseFloat(Math.min(100, (s.rep / s.exp) * 100).toFixed(1)) : 0;
+        let tVal = s.rep > 0 ? parseFloat(Math.min(100, s.timeSum / s.rep).toFixed(1)) : 0;
+        
+        compData.push(cVal);
+        timeData.push(tVal);
+        
+        // Strict 100% logic for Chart Bars
+        compColors.push(cVal >= 100 ? '#10b981' : (cVal >= 80 ? '#3b82f6' : (cVal >= 50 ? '#f59e0b' : '#ef4444')));
+        timeColors.push(tVal >= 100 ? '#10b981' : (tVal >= 80 ? '#3b82f6' : (tVal >= 50 ? '#f59e0b' : '#ef4444')));
+      });
+
+      if (chartPerformanceInstance) chartPerformanceInstance.destroy();
+
+      const ctxPerf = document.getElementById('performanceChart').getContext('2d');
+      
+      chartPerformanceInstance = new Chart(ctxPerf, {
+        type: 'bar', 
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Completeness %',
+              data: compData,
+              backgroundColor: compColors,
+              borderRadius: 6,
+              barPercentage: 0.8,
+              categoryPercentage: 0.8,
+              datalabels: {
+                color: '#1e293b',
+                anchor: 'end',
+                align: 'top',
+                offset: 4,
+                font: { weight: 'bold', size: 11 },
+                formatter: Math.round
+              }
+            },
+            {
+              label: 'Timeliness %',
+              data: timeData,
+              backgroundColor: timeColors,
+              borderRadius: 6,
+              barPercentage: 0.8,
+              categoryPercentage: 0.8,
+              datalabels: {
+                color: '#475569',
+                anchor: 'end',
+                align: 'top',
+                offset: 4,
+                font: { weight: 'bold', size: 11 },
+                formatter: Math.round
+              }
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          
+          // FIX: The layout padding prevents chart text from overlapping the top of the canvas
+          layout: { padding: { top: 35 } }, 
+          
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            
+            // FIX: Max is set to 120 so 100% bars have empty space above them for the label to sit in.
+            // A callback is used so that the number "120" doesn't actually draw on the axis line.
+            y: { 
+                beginAtZero: true, 
+                max: 120, 
+                grid: { borderDash: [4, 4], color: '#e2e8f0' }, 
+                ticks: { 
+                    font: { size: 12, weight: 'bold' }, 
+                    stepSize: 20,
+                    callback: function(value) { return value <= 100 ? value : ''; }
+                } 
+            },
+            x: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' }, maxRotation: 0 } }
+          },
+          plugins: { 
+            legend: { 
+              position: 'top', 
+              align: 'center', 
+              labels: { 
+                // FIX: This padding forces the legend UP and away from the chart bars so they never overlap.
+                padding: 20, 
+                usePointStyle: true, 
+                boxWidth: 12, 
+                font: { size: 12, weight: 'bold' } 
+              } 
+            }
+          }
+        }
+      });
+    }
+
+    function downloadCSV(mode) {
+      let exportMsg = document.getElementById('exportMessage');
+      exportMsg.innerText = 'Preparing Export...';
+      
+      const year = new Date().getFullYear();
+      let selectedFacilityType = document.getElementById('facilityTypeFilter').value;
+      
+      if(mode === 'single') {
+        google.script.run
+          .withSuccessHandler(triggerDownload)
+          .withFailureHandler(() => exportMsg.innerText = 'Export Failed')
+          .getExportWeekCSV(activeWeekNumber, year, null, null, selectedFacilityType === 'all' ? null : selectedFacilityType);
+      } else {
+        google.script.run
+          .withSuccessHandler(triggerDownload)
+          .withFailureHandler(() => exportMsg.innerText = 'Export Failed')
+          .getExportRangeCSV(1, activeWeekNumber, year, null, null, selectedFacilityType === 'all' ? null : selectedFacilityType);
+      }
+    }
+
+    function triggerDownload(csvContent) {
+      let exportMsg = document.getElementById('exportMessage');
+      if (!csvContent || csvContent.trim() === "") {
+        exportMsg.innerText = 'No Data Found';
+        setTimeout(() => { exportMsg.innerText = ''; }, 3000);
+        return;
+      }
+      try {
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url; 
+        link.setAttribute('download', `Dashboard_Export_${activeEpiWeekStr}.csv`);
+        document.body.appendChild(link); link.click();
+        setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 200);
+        exportMsg.innerText = 'Download Complete';
+        setTimeout(() => { exportMsg.innerText = ''; }, 3000);
+      } catch(e) { exportMsg.innerText = 'File Creation Failed'; }
+    }
+  </script>
+</body>
+</html>
