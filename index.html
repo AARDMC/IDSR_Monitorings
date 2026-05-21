@@ -125,7 +125,7 @@
         border-left: 4px solid #1e40af; border-bottom-color: transparent;
     }
     .side-tabs .nav-link.active .badge { background-color: rgba(255,255,255,0.2) !important; color: white !important; }
-    .side-tabs .nav-link.active .pulse-text { color: #fef08a !important; } /* High visibility on active state */
+    .side-tabs .nav-link.active .pulse-text { color: #fef08a !important; }
 
     /* Pulsating indicator for filter mode */
     .pulse-text {
@@ -220,11 +220,16 @@
       <span id="weekLabel" class="text-muted fw-bold me-1" style="font-size: 0.85rem;"></span>
       <select class="form-select text-primary" id="weekDropdown" onchange="selectWeek(this.value)" style="width: auto;"></select>
       
-      <!-- DROPDOWN FILTER APPLIED HERE -->
+      <!-- DROPDOWN FILTER -->
       <select class="form-select text-primary" id="subCityFilter" style="width: auto;" onchange="applyFilters()">
         <option value="ALL" selected>Region Overview (All Sub Cities)</option>
       </select>
       
+      <!-- RESET BUTTON -->
+      <button class="btn btn-light text-secondary border fw-bold shadow-sm d-flex align-items-center" type="button" onclick="resetDashboard()" title="Reset Filters & Search">
+        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+      </button>
+
       <button class="btn btn-primary d-flex align-items-center fw-bold shadow-sm" type="button" onclick="openExportModal()">
         <i class="bi bi-cloud-arrow-down-fill me-2"></i> Export Data
       </button>
@@ -534,6 +539,17 @@
       google.script.run.withSuccessHandler(renderDashboard).fetchDashboardData(currentSessionCode, activeEpiWeekStr);
     }
 
+    // Reset button logic
+    function resetDashboard() {
+      let subCitySelect = document.getElementById('subCityFilter');
+      if(subCitySelect) subCitySelect.value = 'ALL';
+      
+      let searchInput = document.getElementById('globalSearchInput');
+      if(searchInput) searchInput.value = '';
+      
+      applyFilters();
+    }
+
     // Data Filtering Logic
     function getFilteredDataByDropdown() {
       let select = document.getElementById('subCityFilter');
@@ -600,14 +616,31 @@
         let originalBorder = container.style.border;
         let originalBoxShadow = container.style.boxShadow;
         
+        // Setup Temporary Header Title for Image
+        let tempTitle = document.createElement('div');
+        tempTitle.style.textAlign = 'center';
+        tempTitle.style.padding = '15px';
+        tempTitle.style.marginBottom = '15px';
+        tempTitle.style.backgroundColor = '#f8fafc';
+        tempTitle.style.borderBottom = '3px solid #e2e8f0';
+        tempTitle.style.borderRadius = '8px 8px 0 0';
+        
+        // Create formatted name for header
+        let displayName = zName === "Overview" ? "Addis Ababa Region" : zName;
+        tempTitle.innerHTML = `<h3 style="margin:0; color:#0f172a; font-weight:800; font-family:'Inter', sans-serif;">${displayName} IDSR Report Completeness and Timeliness at ${activeEpiWeekStr}</h3>`;
+        
+        container.insertBefore(tempTitle, container.firstChild);
         container.style.border = 'none';
         container.style.boxShadow = 'none';
         
         html2canvas(container, { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
+            // Restore Original State
+            container.removeChild(tempTitle);
             container.style.border = originalBorder;
             container.style.boxShadow = originalBoxShadow;
+            
             let link = document.createElement('a');
-            link.download = `${zName.replace(/\s+/g, '_')}_Table.png`;
+            link.download = `${displayName.replace(/\s+/g, '_')}_${activeEpiWeekStr.replace(/\s+/g, '')}.png`;
             link.href = canvas.toDataURL("image/png");
             link.click();
         });
@@ -620,7 +653,7 @@
       });
     }
 
-    // HELPER: Generate Table Row HTML (Shared by Tab logic and Search Logic)
+    // HELPER: Generate Table Row HTML
     function generateRowHtml(row, showZoneCol) {
       let hoverHtml = '';
       if (row.ReportedList && row.ReportedList.length > 0) {
