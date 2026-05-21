@@ -1112,9 +1112,13 @@
         .withSuccessHandler((res) => {
            triggerDownload(res);
         })
-        .withFailureHandler(() => { 
+        .withFailureHandler((err) => { 
             exportModalInstance.hide();
-            showErrorPopup("Network Error", "The server failed to respond. Please try again.");
+            let msg = "The server failed to respond. Please try again.";
+            if (err) {
+               msg = (typeof err === 'string') ? err : (err.message || msg);
+            }
+            showErrorPopup("Export Error", msg);
         })
         .getRawExportData(inputCode, selectedExpectedCode, type, p1, p2);
     }
