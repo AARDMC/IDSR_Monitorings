@@ -151,9 +151,6 @@
     .popover-body { max-height: 250px; overflow-y: auto; font-family: 'Inter', sans-serif; }
     .badge-death { background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; padding: 4px 8px; border-radius: 12px; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);}
 
-    /* HIGHLIGHT SEARCH RESULT TEXT */
-    .search-highlight { background-color: #fef08a; padding: 0 2px; border-radius: 2px; font-weight: bold; }
-
     /* CUSTOM HIGH-TECH SVG LOADER */
     .loader-overlay { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
     .warehouse-svg { margin-bottom: 15px; filter: drop-shadow(0 15px 15px rgba(37, 99, 235, 0.2)); }
@@ -211,8 +208,9 @@
       <span id="weekLabel" class="text-muted fw-bold me-1" style="font-size: 0.85rem;"></span>
       <select class="form-select text-primary" id="weekDropdown" onchange="selectWeek(this.value)" style="width: auto;"></select>
       
-      <select class="form-select text-primary" id="subCityFilter" style="width: auto;">
-        <option value="" disabled selected>Select Sub City</option>
+      <!-- DROPDOWN FILTER APPLIED HERE -->
+      <select class="form-select text-primary" id="subCityFilter" style="width: auto;" onchange="applyFilters()">
+        <option value="ALL" selected>Region Overview (All Sub Cities)</option>
       </select>
       
       <button class="btn btn-primary d-flex align-items-center fw-bold shadow-sm" type="button" onclick="openExportModal()">
@@ -262,11 +260,11 @@
       <div class="data-panel-header d-flex justify-content-between align-items-center">
         <span class="d-none d-md-block"><i class="bi bi-layout-sidebar-inset me-2 text-primary"></i> Sub City & Hospital Breakdown</span>
         
-        <!-- Live Global Facility Search Bar -->
+        <!-- Live Deep Facility Search Bar -->
         <div class="d-flex align-items-center gap-3 w-50 justify-content-end">
            <div class="input-group input-group-sm w-100 shadow-sm border rounded bg-white">
               <span class="input-group-text bg-transparent border-0 text-muted"><i class="bi bi-search"></i></span>
-              <input type="text" id="globalSearchInput" class="form-control border-0 shadow-none bg-transparent" placeholder="Global Search: Enter Health Facility Name..." onkeyup="handleGlobalSearch()">
+              <input type="text" id="globalSearchInput" class="form-control border-0 shadow-none bg-transparent" placeholder="Deep Search: Enter Woreda or specific Health Facility..." onkeyup="handleGlobalSearch()">
            </div>
         </div>
       </div>
@@ -421,7 +419,7 @@
     let currentSessionCode = "Addis_RDMC"; 
     let activeEpiWeekStr = "";
     let activeWeekNumber = 1;
-    let allDashboardData = [];
+    let allDashboardData = []; // Raw pristine data
     let chartPerformanceInstance = null;
     let exportModalInstance = null;
     let errorModalInstance = null;
@@ -435,11 +433,11 @@
       google.script.run
         .withSuccessHandler(function(codes) {
            let select = document.getElementById('subCityFilter');
-           let html = '<option value="" disabled selected>Select Sub City</option>';
+           let html = '<option value="ALL" selected>Region Overview (All Sub Cities)</option>';
            let seenNames = new Set();
            for (let code in codes) {
                let name = codes[code];
-               if (name === "REGION") name = "Addis Ababa PHEM";
+               if (name === "REGION") continue; // Skip to prevent double region
                if (!seenNames.has(name.toLowerCase())) {
                    seenNames.add(name.toLowerCase());
                    html += `<option value="${code}">${name}</option>`;
@@ -512,6 +510,27 @@
       google.script.run.withSuccessHandler(renderDashboard).fetchDashboardData(currentSessionCode, activeEpiWeekStr);
     }
 
+    // Data Filtering Logic
+    function getFilteredDataByDropdown() {
+      let select = document.getElementById('subCityFilter');
+      let selectedValue = select.value;
+      if (!selectedValue || selectedValue === "ALL") return allDashboardData;
+      
+      let selectedText = select.options[select.selectedIndex].text.toLowerCase();
+      // Clean string to ensure match (e.g. "Bole" matches "Bole Sub City")
+      let cleanSearchText = selectedText.replace("sub city", "").replace("phem", "").replace("addis ababa", "").trim();
+      
+      if(!cleanSearchText) return allDashboardData;
+      return allDashboardData.filter(row => row.Zone && row.Zone.toLowerCase().includes(cleanSearchText));
+    }
+
+    // Called on dropdown change
+    function applyFilters() {
+      let filteredData = getFilteredDataByDropdown();
+      renderTableRows(filteredData);
+      handleGlobalSearch(); // Re-apply deep search if text is in box
+    }
+
     function renderDashboard(response) {
       hideLoader();
       document.getElementById('dashboardKPI').style.display = 'block';
@@ -525,7 +544,7 @@
       }
 
       allDashboardData = response.data; 
-      renderTableRows(allDashboardData);
+      applyFilters(); // Apply any existing filter and render
     }
 
     function getScoreClass(score) {
@@ -577,7 +596,7 @@
       });
     }
 
-    // HELPER: Generate Table Row HTML
+    // HELPER: Generate Table Row HTML (Shared by Tab logic and Search Logic)
     function generateRowHtml(row, showZoneCol) {
       let hoverHtml = '';
       if (row.ReportedList && row.ReportedList.length > 0) {
@@ -621,7 +640,7 @@
       </tr>`;
     }
 
-    // GLOBAL SEARCH - Cross Sub-City Search
+    // GLOBAL SEARCH - Cross Sub-City Deep Search
     function handleGlobalSearch() {
        let input = document.getElementById('globalSearchInput').value.toLowerCase().trim();
        let mainContainer = document.getElementById('mainDataContainer');
@@ -638,7 +657,7 @@
 
        let resultsHtml = `
        <div class="d-flex justify-content-between align-items-center mb-3">
-         <h5 class="m-0 fw-bold text-primary"><i class="bi bi-search me-2"></i>Global Search Results</h5>
+         <h5 class="m-0 fw-bold text-primary"><i class="bi bi-search me-2"></i>Global Deep Search Results</h5>
        </div>
        <div class="bg-white border rounded shadow-sm p-3">
          <div class="table-responsive" style="overflow: visible;">
@@ -646,7 +665,7 @@
              <thead>
                <tr>
                  <th>Parent Sub City</th>
-                 <th>Health Facility Name</th>
+                 <th>Parent Woreda Grouping</th>
                  <th class="text-center">Expected</th>
                  <th class="text-center">Reported</th>
                  <th class="text-center">Completeness</th>
@@ -657,8 +676,23 @@
              <tbody>`;
 
        let matchCount = 0;
-       allDashboardData.forEach(row => {
-           if (row.Woreda && row.Woreda.toLowerCase().includes(input)) {
+       
+       // Note: Searches only within currently filtered dropdown context!
+       let activeData = getFilteredDataByDropdown(); 
+
+       activeData.forEach(row => {
+           let isMatch = false;
+           
+           // 1. Check parent Woreda/Facility name
+           if (row.Woreda && row.Woreda.toLowerCase().includes(input)) isMatch = true;
+           // 2. Check deeply into Reported List
+           if (!isMatch && row.ReportedList && row.ReportedList.some(f => f.toLowerCase().includes(input))) isMatch = true;
+           // 3. Check deeply into Missing List
+           if (!isMatch && row.NotReportedList && row.NotReportedList.some(f => f.toLowerCase().includes(input))) isMatch = true;
+           // 4. Check deeply into Alerts/Deaths Facility details
+           if (!isMatch && row.DeathDetails && row.DeathDetails.some(d => d.facility && d.facility.toLowerCase().includes(input))) isMatch = true;
+           
+           if (isMatch) {
                matchCount++;
                resultsHtml += generateRowHtml(row, true);
            }
@@ -675,12 +709,15 @@
 
     function renderTableRows(data) {
       let mainContainer = document.getElementById('mainDataContainer');
-      document.getElementById('globalSearchInput').value = ''; 
       document.getElementById('searchResultsContainer').style.display = 'none';
       mainContainer.style.display = 'flex';
 
+      let isFiltered = document.getElementById('subCityFilter').value !== 'ALL';
+      let overviewTitle = isFiltered ? "Selected Summary" : "Region Overview";
+      let overviewTotalLabel = isFiltered ? "Filtered Total" : "Regional Total";
+
       if (data.length === 0) {
-        mainContainer.innerHTML = `<div class="w-100 text-center py-5 text-muted">No operational facilities mapped for this period.</div>`;
+        mainContainer.innerHTML = `<div class="w-100 text-center py-5 text-muted">No operational facilities mapped for this period or filter.</div>`;
         document.getElementById('kpiExpected').innerText = 0;
         document.getElementById('kpiReported').innerText = 0;
         document.getElementById('kpiCompleteness').innerText = '0%';
@@ -729,7 +766,7 @@
       document.getElementById('kpiCompCard').className = `kpi-card ${getScoreClass(globalComp)}`;
       document.getElementById('kpiTimeCard').className = `kpi-card ${getScoreClass(globalTime)}`;
 
-      if (globalComp === 100 && globalTime === 100) { triggerFirePopup(); }
+      if (globalComp === 100 && globalTime === 100 && !isFiltered) { triggerFirePopup(); }
 
       let tabsHtml = '<div class="side-tabs nav flex-column" role="tablist" aria-orientation="vertical">';
       let contentHtml = '<div class="tab-content-area tab-content">';
@@ -738,7 +775,7 @@
       tabsHtml += `
       <button class="nav-link active" id="tab-btn-region" data-bs-toggle="pill" data-bs-target="#tab-pane-region" type="button" role="tab" aria-selected="true">
         <div class="d-flex align-items-center text-truncate pe-2" style="max-width: 65%;">
-           <i class="bi bi-globe me-2 text-primary"></i> <span class="text-truncate fw-bold text-primary">Region Overview</span>
+           <i class="bi bi-globe me-2 text-primary"></i> <span class="text-truncate fw-bold text-primary">${overviewTitle}</span>
         </div>
         <div class="ms-auto d-flex gap-1 align-items-center">
            <span class="badge ${getBadgeClass(globalComp)}" title="Completeness" style="font-size:0.7rem; width: 42px;">C: ${globalComp.toFixed(0)}%</span>
@@ -749,8 +786,8 @@
       contentHtml += `
       <div class="tab-pane fade show active" id="tab-pane-region" role="tabpanel" aria-labelledby="tab-btn-region">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="m-0 fw-bold text-slate-800"><i class="bi bi-table me-2 text-primary"></i>Region Summary</h5>
-          <button class="btn btn-outline-primary btn-sm fw-bold shadow-sm d-flex align-items-center" onclick="downloadTableImage('pane-region-table-card', 'Addis_Ababa_Region')">
+          <h5 class="m-0 fw-bold text-slate-800"><i class="bi bi-table me-2 text-primary"></i>${overviewTitle}</h5>
+          <button class="btn btn-outline-primary btn-sm fw-bold shadow-sm d-flex align-items-center" onclick="downloadTableImage('pane-region-table-card', 'Overview')">
             <i class="bi bi-camera me-2"></i> Export Table
           </button>
         </div>
@@ -792,7 +829,7 @@
 
       contentHtml += `
           <tr class="grand-total-row">
-            <td class="text-end text-uppercase">Regional Total</td>
+            <td class="text-end text-uppercase">${overviewTotalLabel}</td>
             <td class="text-center">${kpi.exp}</td>
             <td class="text-center">${kpi.rep}</td>
             <td class="text-center">${globalComp.toFixed(1)}%</td>
@@ -844,7 +881,7 @@
               <table class="table table-hover table-borderless table-sm">
                 <thead>
                   <tr>
-                    <th>Health Facility Name</th>
+                    <th>Woreda Group / Facility</th>
                     <th class="text-center">Expected</th>
                     <th class="text-center">Reported</th>
                     <th class="text-center">Completeness</th>
