@@ -90,27 +90,27 @@
     .kpi-label { font-size: 0.75rem; color: rgba(255,255,255,0.85); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;}
     .kpi-value { font-size: 1.25rem; font-weight: 800; color: #ffffff !important; line-height: 1.1; margin-top: 2px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);}
 
-    /* CHARTS */
-    .analytics-row { display: flex; gap: 12px; flex-shrink: 0; height: clamp(220px, 32vh, 280px); }
+    /* CHARTS (Reduced Height) */
+    .analytics-row { display: flex; gap: 12px; flex-shrink: 0; height: 180px; }
     .chart-panel { flex: 1; background: var(--card-bg); border-radius: 12px; padding: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
     .chart-wrapper { flex: 1; position: relative; min-height: 0; width: 100%; overflow-x: auto; overflow-y: hidden; }
     .chart-area { position: relative; height: 100%; width: 100%; }
 
     /* REDESIGNED SPLIT PANEL FOR DATA (TABS & CONTENT) */
     .data-panel { flex: 1; min-height: 0; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; }
-    .data-panel-header { padding: 12px 16px; border-bottom: 2px solid var(--border-color); background: #f8fafc; font-weight: 700; font-size: 1rem; color: #0f172a; flex-shrink: 0; }
+    .data-panel-header { padding: 10px 16px; border-bottom: 2px solid var(--border-color); background: #f8fafc; font-weight: 700; font-size: 1rem; color: #0f172a; flex-shrink: 0; }
     
     .data-panel-content { flex: 1; overflow: hidden; background: #f1f5f9; }
 
-    /* Left Side: Buttons */
+    /* Left Side: Buttons (Increased width, smaller padding to fit all items) */
     .side-tabs {
-        min-width: 270px; max-width: 270px;
+        min-width: 320px; max-width: 320px;
         background: #f8fafc; border-right: 1px solid var(--border-color);
         overflow-y: auto; height: 100%; display: flex; flex-direction: column;
     }
     .side-tabs .nav-link {
-        border-radius: 0; margin: 0; padding: 14px 16px;
-        font-weight: 600; font-size: 0.95rem; color: #475569;
+        border-radius: 0; margin: 0; padding: 10px 12px;
+        font-weight: 600; font-size: 0.9rem; color: #475569;
         border-bottom: 1px solid var(--border-color);
         display: flex; justify-content: space-between; align-items: center;
         transition: all 0.2s ease; text-align: left; background: #ffffff;
@@ -252,8 +252,16 @@
 
     <div class="data-panel">
       <div class="data-panel-header d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-layout-sidebar-inset me-2 text-primary"></i> Sub City & Hospital Breakdown</span>
-        <span id="exportMessage" class="badge bg-light text-primary border" style="font-size:0.8rem;"></span>
+        <span class="d-none d-md-block"><i class="bi bi-layout-sidebar-inset me-2 text-primary"></i> Sub City & Hospital Breakdown</span>
+        
+        <!-- Live Facility Search Bar -->
+        <div class="d-flex align-items-center gap-3 w-50 justify-content-end">
+           <div class="input-group input-group-sm w-75 shadow-sm border rounded bg-white">
+              <span class="input-group-text bg-transparent border-0 text-muted"><i class="bi bi-search"></i></span>
+              <input type="text" id="globalSearchInput" class="form-control border-0 shadow-none bg-transparent" placeholder="Search facility/woreda..." onkeyup="filterActiveTable()">
+           </div>
+           <span id="exportMessage" class="badge bg-light text-primary border" style="font-size:0.8rem; display:none;"></span>
+        </div>
       </div>
       <div class="data-panel-content d-flex p-0" id="mainDataContainer">
          <!-- Tabs and Tables injected via JS -->
@@ -361,7 +369,7 @@
   
   <script>
     // =========================================================
-    // GAS to REST API BRIDGE (Mocks google.script.run for GitHub)
+    // GAS to REST API BRIDGE
     // =========================================================
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxT2CXgjAUNo8roeyaGnbqrxgV_md1Zmxme_EaxuztIu51-4PwX4lBtpcoEUhP0oZzccA/exec";
 
@@ -446,6 +454,12 @@
           fetchData();
         })
         .getCurrentEpiWeekInfo();
+        
+      // Clear Search input when switching tabs
+      document.addEventListener('shown.bs.tab', function (e) {
+         document.getElementById('globalSearchInput').value = '';
+         filterActiveTable(); // Resets visibility
+      });
     });
 
     function showErrorPopup(title, message) {
@@ -534,19 +548,15 @@
       }());
     }
 
-    // Capture Table to Image Script
     function downloadTableImage(containerId, zName) {
         let container = document.getElementById(containerId);
-        // Save original styles
         let originalBorder = container.style.border;
         let originalBoxShadow = container.style.boxShadow;
         
-        // Remove styling slightly for clean canvas extraction
         container.style.border = 'none';
         container.style.boxShadow = 'none';
         
         html2canvas(container, { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
-            // Restore styles
             container.style.border = originalBorder;
             container.style.boxShadow = originalBoxShadow;
             
@@ -557,8 +567,27 @@
         });
     }
 
+    // Live search filtering function
+    function filterActiveTable() {
+       let input = document.getElementById('globalSearchInput');
+       let filter = input.value.toLowerCase();
+       let activePane = document.querySelector('.tab-pane.active');
+       if (activePane) {
+           let rows = activePane.querySelectorAll('tbody tr:not(.grand-total-row)');
+           rows.forEach(row => {
+               let nameCell = row.cells[0];
+               if (nameCell) {
+                   let txt = nameCell.textContent || nameCell.innerText;
+                   row.style.display = txt.toLowerCase().includes(filter) ? "" : "none";
+               }
+           });
+       }
+    }
+
     function renderTableRows(data, isMaster) {
       let mainContainer = document.getElementById('mainDataContainer');
+      document.getElementById('globalSearchInput').value = ''; // Reset search on load
+
       if (data.length === 0) {
         mainContainer.innerHTML = `<div class="w-100 text-center py-5 text-muted">No operational facilities mapped for this period.</div>`;
         document.getElementById('kpiExpected').innerText = 0;
@@ -614,9 +643,80 @@
 
       let tabsHtml = '<div class="side-tabs nav flex-column" role="tablist" aria-orientation="vertical">';
       let contentHtml = '<div class="tab-content-area tab-content">';
-      let index = 0;
       
-      for (let z in groupedZones) {
+      // ==========================================
+      // 1. REGION OVERVIEW TAB (DEFAULT)
+      // ==========================================
+      tabsHtml += `
+      <button class="nav-link active" id="tab-btn-region" data-bs-toggle="pill" data-bs-target="#tab-pane-region" type="button" role="tab" aria-selected="true">
+        <div class="d-flex align-items-center text-truncate pe-2" style="max-width: 65%;">
+           <i class="bi bi-globe me-2 text-primary"></i> <span class="text-truncate fw-bold text-primary">Region Overview</span>
+        </div>
+        <div class="ms-auto d-flex gap-1 align-items-center">
+           <span class="badge ${getBadgeClass(globalComp)}" title="Completeness" style="font-size:0.7rem; width: 42px;">C: ${globalComp.toFixed(0)}%</span>
+           <span class="badge ${getBadgeClass(globalTime)}" title="Timeliness" style="font-size:0.7rem; width: 42px;">T: ${globalTime.toFixed(0)}%</span>
+        </div>
+      </button>`;
+
+      contentHtml += `
+      <div class="tab-pane fade show active" id="tab-pane-region" role="tabpanel" aria-labelledby="tab-btn-region">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="m-0 fw-bold text-slate-800"><i class="bi bi-table me-2 text-primary"></i>Region Summary</h5>
+          <button class="btn btn-outline-primary btn-sm fw-bold shadow-sm d-flex align-items-center" onclick="downloadTableImage('pane-region-table-card', 'Addis_Ababa_Region')">
+            <i class="bi bi-camera me-2"></i> Export Table
+          </button>
+        </div>
+        <div class="bg-white border rounded shadow-sm p-3" id="pane-region-table-card">
+          <div class="table-responsive" style="overflow: visible;">
+            <table class="table table-hover table-borderless table-sm">
+              <thead>
+                <tr>
+                  <th>Sub City / Zone</th>
+                  <th class="text-center">Expected</th>
+                  <th class="text-center">Reported</th>
+                  <th class="text-center">Completeness</th>
+                  <th class="text-center">Timeliness</th>
+                  <th class="text-center">Alerts / Deaths</th>
+                </tr>
+              </thead>
+              <tbody>`;
+      
+      let sortedZoneKeys = Object.keys(zoneStats).sort((a, b) => a.localeCompare(b));
+      sortedZoneKeys.forEach(z => {
+          let s = zoneStats[z];
+          let c = s.exp > 0 ? (s.rep / s.exp) * 100 : 0;
+          let t = s.rep > 0 ? (s.timeSum / s.rep) : 0;
+          let isHosp = (z === "Public Hospitals");
+          let dC = s.deaths > 0 ? `<span class="badge-death">${s.deaths}</span>` : '<span class="text-muted">-</span>';
+          
+          contentHtml += `
+          <tr>
+              <td class="fw-bold text-main">
+                  ${isHosp ? '<i class="bi bi-hospital-fill text-danger me-1"></i>' : '<i class="bi bi-geo-alt-fill text-primary me-1"></i>'} ${z}
+              </td>
+              <td class="text-center fw-semibold">${s.exp}</td>
+              <td class="text-center fw-semibold">${s.rep}</td>
+              <td class="text-center"><span class="badge ${getBadgeClass(c)}">${Math.min(100, c).toFixed(1)}%</span></td>
+              <td class="text-center"><span class="badge ${getBadgeClass(t)}">${Math.min(100, t).toFixed(1)}%</span></td>
+              <td class="text-center">${dC}</td>
+          </tr>`;
+      });
+
+      contentHtml += `
+          <tr class="grand-total-row">
+            <td class="text-end text-uppercase">Regional Total</td>
+            <td class="text-center">${kpi.exp}</td>
+            <td class="text-center">${kpi.rep}</td>
+            <td class="text-center">${globalComp.toFixed(1)}%</td>
+            <td class="text-center">${globalTime.toFixed(1)}%</td>
+            <td class="text-center">${kpi.deaths > 0 ? kpi.deaths : '-'}</td>
+          </tr></tbody></table></div></div></div>`;
+
+      // ==========================================
+      // 2. SUB CITY / HOSPITAL TABS
+      // ==========================================
+      let index = 0;
+      for (let z of sortedZoneKeys) {
         index++;
         let zData = groupedZones[z];
         let stats = zoneStats[z];
@@ -627,26 +727,27 @@
         let comp = Math.min(100, rawComp).toFixed(1);
         let time = Math.min(100, rawTime).toFixed(1);
         
-        let isActive = index === 1 ? 'active' : '';
-        let isShow = index === 1 ? 'show active' : '';
         let tabId = 'tab-btn-' + index;
         let paneId = 'tab-pane-' + index;
         
         let isHospitalCard = (z === "Public Hospitals");
-        let iconHtml = isHospitalCard ? `<i class="bi bi-hospital-fill me-2 fs-5"></i>` : `<i class="bi bi-geo-alt-fill me-2"></i>`;
+        let iconHtml = isHospitalCard ? `<i class="bi bi-hospital-fill me-2" style="color: #be185d;"></i>` : `<i class="bi bi-geo-alt-fill me-2 text-secondary"></i>`;
         
         // Tab Button
         tabsHtml += `
-        <button class="nav-link ${isActive}" id="${tabId}" data-bs-toggle="pill" data-bs-target="#${paneId}" type="button" role="tab" aria-controls="${paneId}" aria-selected="${index === 1}">
-          <div class="d-flex align-items-center text-truncate pe-2" style="max-width: 75%;" title="${z}">
+        <button class="nav-link" id="${tabId}" data-bs-toggle="pill" data-bs-target="#${paneId}" type="button" role="tab" aria-selected="false">
+          <div class="d-flex align-items-center text-truncate pe-2" style="max-width: 65%;" title="${z}">
              ${iconHtml} <span class="text-truncate">${z}</span>
           </div>
-          <span class="badge ${getBadgeClass(rawComp)} shadow-sm">${comp}%</span>
+          <div class="ms-auto d-flex gap-1 align-items-center">
+             <span class="badge ${getBadgeClass(rawComp)}" title="Completeness" style="font-size:0.7rem; width: 42px;">C: ${Math.round(comp)}%</span>
+             <span class="badge ${getBadgeClass(rawTime)}" title="Timeliness" style="font-size:0.7rem; width: 42px;">T: ${Math.round(time)}%</span>
+          </div>
         </button>`;
 
         // Tab Content
         contentHtml += `
-        <div class="tab-pane fade ${isShow}" id="${paneId}" role="tabpanel" aria-labelledby="${tabId}">
+        <div class="tab-pane fade" id="${paneId}" role="tabpanel" aria-labelledby="${tabId}">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="m-0 fw-bold text-slate-800"><i class="bi bi-table me-2 text-primary"></i>${z} Detail View</h5>
             <button class="btn btn-outline-primary btn-sm fw-bold shadow-sm d-flex align-items-center" onclick="downloadTableImage('${paneId}-table-card', '${z}')">
@@ -659,7 +760,7 @@
               <table class="table table-hover table-borderless table-sm">
                 <thead>
                   <tr>
-                    <th>Name</th>
+                    <th>Facility Name</th>
                     <th class="text-center">Expected</th>
                     <th class="text-center">Reported</th>
                     <th class="text-center">Completeness</th>
@@ -670,7 +771,6 @@
                 <tbody>`;
                     
         zData.forEach(row => {
-          // Prepare popover HTML (visible & immune to overflow cuts)
           let hoverHtml = '';
           if (row.ReportedList && row.ReportedList.length > 0) {
              hoverHtml += `<div><strong class='d-block pb-1 mb-2 border-bottom border-secondary text-slate-800'>Reported (${row.Reported})</strong>`;
@@ -680,8 +780,6 @@
              hoverHtml += `<div class='mt-3'><strong class='d-block pb-1 mb-2 border-bottom border-secondary text-slate-800'>Missing (${row.Expected - row.Reported})</strong>`;
              hoverHtml += `<div class='text-secondary' style='font-size:0.8rem; margin-bottom:4px;'>• ${row.NotReportedList.join("</div><div class='text-secondary' style='font-size:0.8rem; margin-bottom:4px;'>• ")}</div></div>`;
           }
-          
-          // Escape quotes for the data attribute safely
           let safeHoverHtml = hoverHtml.replace(/"/g, '&quot;');
 
           let dContent = '<span class="text-muted">-</span>';
@@ -689,13 +787,11 @@
              let dTooltip = `<strong class='text-danger d-block pb-1 mb-2 border-bottom border-secondary'>Alerts / Deaths</strong>`;
              if(row.DeathDetails) row.DeathDetails.forEach(d => { dTooltip += `<div style='font-size:0.85rem; color:#ef4444; margin-bottom:4px;'><strong>${d.facility}:</strong> ${d.disease} (${d.count})</div>`; });
              let safeDHtml = dTooltip.replace(/"/g, '&quot;');
-             
              dContent = `<span class="badge-death" tabindex="0" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-container="body" data-bs-html="true" data-bs-content="${safeDHtml}" style="cursor: pointer; outline: none;">${row.TotalDeaths}</span>`;
           }
 
           let rCompRaw = row.Completeness || 0;
           let rTimeRaw = row.Timeliness || 0;
-          
           let rowComp = Math.min(100, rCompRaw);
           let rowTime = Math.min(100, rTimeRaw);
 
@@ -705,7 +801,7 @@
           }
 
           contentHtml += `<tr>
-            <td class="fw-bold text-main text-truncate" style="max-width: 150px;" title="${row.Woreda}">${row.Woreda}</td>
+            <td class="fw-bold text-main">${row.Woreda}</td>
             <td class="text-center fw-semibold">${row.Expected}</td>
             <td class="text-center fw-semibold">${displayReported}</td>
             <td class="text-center"><span class="badge ${getBadgeClass(rCompRaw)}">${rowComp}%</span></td>
@@ -729,7 +825,7 @@
       
       mainContainer.innerHTML = tabsHtml + contentHtml;
       
-      // Initialize Bootstrap Popovers (tooltips on steroids)
+      // Initialize Bootstrap Popovers
       let popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
       popoverTriggerList.map(function (popoverTriggerEl) {
         return new bootstrap.Popover(popoverTriggerEl);
@@ -775,15 +871,16 @@
               label: 'Completeness %',
               data: compData,
               backgroundColor: compColors,
-              borderRadius: 6,
-              barPercentage: 0.8,
-              categoryPercentage: 0.8,
+              borderRadius: 4,
+              maxBarThickness: 20, /* Reduced column width */
+              barPercentage: 0.5,
+              categoryPercentage: 0.5,
               datalabels: {
                 color: '#1e293b',
                 anchor: 'end',
                 align: 'top',
-                offset: 4,
-                font: { weight: 'bold', size: 11 },
+                offset: 2,
+                font: { weight: 'bold', size: 10 },
                 formatter: Math.round
               }
             },
@@ -791,15 +888,16 @@
               label: 'Timeliness %',
               data: timeData,
               backgroundColor: timeColors,
-              borderRadius: 6,
-              barPercentage: 0.8,
-              categoryPercentage: 0.8,
+              borderRadius: 4,
+              maxBarThickness: 20, /* Reduced column width */
+              barPercentage: 0.5,
+              categoryPercentage: 0.5,
               datalabels: {
                 color: '#475569',
                 anchor: 'end',
                 align: 'top',
-                offset: 4,
-                font: { weight: 'bold', size: 11 },
+                offset: 2,
+                font: { weight: 'bold', size: 10 },
                 formatter: Math.round
               }
             }
@@ -807,23 +905,23 @@
         },
         options: {
           responsive: true, maintainAspectRatio: false,
-          layout: { padding: { top: 35 } }, 
+          layout: { padding: { top: 25 } }, 
           interaction: { mode: 'index', intersect: false },
           scales: {
             y: { 
                 beginAtZero: true, max: 120, 
                 grid: { borderDash: [4, 4], color: '#e2e8f0' }, 
                 ticks: { 
-                    font: { size: 12, weight: 'bold' }, stepSize: 20,
+                    font: { size: 11, weight: 'bold' }, stepSize: 20,
                     callback: function(value) { return value <= 100 ? value : ''; }
                 } 
             },
-            x: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' }, maxRotation: 0 } }
+            x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' }, maxRotation: 0 } }
           },
           plugins: { 
             legend: { 
               position: 'top', align: 'center', 
-              labels: { padding: 20, usePointStyle: true, boxWidth: 12, font: { size: 12, weight: 'bold' } } 
+              labels: { padding: 10, usePointStyle: true, boxWidth: 10, font: { size: 11, weight: 'bold' } } 
             }
           }
         }
@@ -873,13 +971,8 @@
       if (type === 'range') {
           p1 = parseInt(document.getElementById('exportFromWeek').value);
           p2 = parseInt(document.getElementById('exportToWeek').value);
-          
           if (p2 < p1) { let temp = p1; p1 = p2; p2 = temp; } 
-          
-          if ((p2 - p1) >= 10) {
-              document.getElementById('rangeError').style.display = 'block';
-              return;
-          }
+          if ((p2 - p1) >= 10) { document.getElementById('rangeError').style.display = 'block'; return; }
       } else {
           p1 = activeWeekNumber;
       }
@@ -889,12 +982,12 @@
       
       let exportMsg = document.getElementById('exportMessage');
       exportMsg.innerText = 'Preparing Download...';
+      exportMsg.style.display = 'inline-block';
       
       google.script.run
         .withSuccessHandler(triggerDownload)
         .withFailureHandler(() => { 
-            exportMsg.innerText = 'Export Failed'; 
-            setTimeout(() => { exportMsg.innerText = ''; }, 3000); 
+            exportMsg.style.display = 'none';
             showErrorPopup("Network Error", "The server failed to respond. Please try again.");
         })
         .getRawExportData(inputCode, selectedExpectedCode, type, p1, p2);
@@ -902,18 +995,15 @@
 
     function triggerDownload(res) {
       let exportMsg = document.getElementById('exportMessage');
+      exportMsg.style.display = 'none';
       
       if (!res.success) {
-        exportMsg.innerText = 'Validation Failed';
-        setTimeout(() => { exportMsg.innerText = ''; }, 3000);
         showErrorPopup("Authentication Failed", res.error);
         return;
       }
       
       let csvContent = res.csvContent;
       if (!csvContent || csvContent.trim() === "") {
-        exportMsg.innerText = 'No Data Found';
-        setTimeout(() => { exportMsg.innerText = ''; }, 3000);
         showErrorPopup("No Data", "No records found for the selected time range.");
         return;
       }
@@ -926,10 +1016,7 @@
         link.setAttribute('download', res.fileName);
         document.body.appendChild(link); link.click();
         setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 200);
-        exportMsg.innerText = 'Download Complete';
-        setTimeout(() => { exportMsg.innerText = ''; }, 3000);
       } catch(e) { 
-        exportMsg.innerText = 'File Creation Failed'; 
         showErrorPopup("Download Error", "Could not generate the CSV file on your device.");
       }
     }
