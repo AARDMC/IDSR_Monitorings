@@ -102,7 +102,7 @@
     
     .data-panel-content { flex: 1; overflow: hidden; background: #f1f5f9; }
 
-    /* Left Side: Buttons (Increased width, smaller padding to fit all items) */
+    /* Left Side: Buttons */
     .side-tabs {
         min-width: 320px; max-width: 320px;
         background: #f8fafc; border-right: 1px solid var(--border-color);
@@ -171,6 +171,7 @@
     .terminal-status { font-family: monospace; font-size: 0.8rem; color: #475569; background: #f1f5f9; padding: 6px 16px; border-radius: 20px; border: 1px solid #e2e8f0; display: inline-flex; align-items: center; gap: 8px; margin-top: 15px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);}
     .terminal-status i { color: #2563eb; animation: flashPulse 1s infinite alternate; }
 
+    /* MOBILE ADJUSTMENTS */
     @media (max-width: 768px) {
       body { height: auto; overflow: auto; display: block; }
       .top-header { flex-direction: column; height: auto; padding: 15px; gap: 12px; text-align: center; }
@@ -184,8 +185,24 @@
       .chart-area { min-width: 750px; }
       .data-panel { display: block; overflow: visible; }
       .data-panel-content { flex-direction: column !important; overflow: auto !important; }
-      .side-tabs { max-width: 100%; border-right: none; border-bottom: 2px solid var(--border-color); flex: 0 0 auto; height: auto; flex-direction: row; overflow-x: auto; white-space: nowrap; }
-      .side-tabs .nav-link { border-bottom: none; border-right: 1px solid var(--border-color); padding: 10px 15px; }
+      
+      /* Vertical scrolling sidebar for mobile */
+      .side-tabs { 
+          max-width: 100%; 
+          border-right: none; 
+          border-bottom: 2px solid var(--border-color); 
+          flex: 0 0 auto; 
+          max-height: 250px; /* Forces vertical scrolling */
+          flex-direction: column; 
+          overflow-y: auto; 
+          overflow-x: hidden; 
+          white-space: normal; 
+      }
+      .side-tabs .nav-link { 
+          border-bottom: 1px solid var(--border-color); 
+          border-right: none; 
+          padding: 10px 15px; 
+      }
       .tab-content-area { padding: 10px; height: auto; }
     }
   </style>
@@ -258,7 +275,7 @@
         <div class="d-flex align-items-center gap-3 w-50 justify-content-end">
            <div class="input-group input-group-sm w-75 shadow-sm border rounded bg-white">
               <span class="input-group-text bg-transparent border-0 text-muted"><i class="bi bi-search"></i></span>
-              <input type="text" id="globalSearchInput" class="form-control border-0 shadow-none bg-transparent" placeholder="Search facility/woreda..." onkeyup="filterActiveTable()">
+              <input type="text" id="globalSearchInput" class="form-control border-0 shadow-none bg-transparent" placeholder="Search health facility..." onkeyup="filterActiveTable()">
            </div>
            <span id="exportMessage" class="badge bg-light text-primary border" style="font-size:0.8rem; display:none;"></span>
         </div>
@@ -567,7 +584,7 @@
         });
     }
 
-    // Live search filtering function
+    // Live search filtering function - TARGETS FIRST COLUMN (Facility Name) ONLY
     function filterActiveTable() {
        let input = document.getElementById('globalSearchInput');
        let filter = input.value.toLowerCase();
@@ -575,9 +592,10 @@
        if (activePane) {
            let rows = activePane.querySelectorAll('tbody tr:not(.grand-total-row)');
            rows.forEach(row => {
-               let nameCell = row.cells[0];
-               if (nameCell) {
-                   let txt = nameCell.textContent || nameCell.innerText;
+               // Cell[0] always holds the Facility Name (or Sub City name in the Region overview tab)
+               let facilityNameCell = row.cells[0];
+               if (facilityNameCell) {
+                   let txt = facilityNameCell.textContent || facilityNameCell.innerText;
                    row.style.display = txt.toLowerCase().includes(filter) ? "" : "none";
                }
            });
@@ -760,7 +778,7 @@
               <table class="table table-hover table-borderless table-sm">
                 <thead>
                   <tr>
-                    <th>Facility Name</th>
+                    <th>Health Facility Name</th>
                     <th class="text-center">Expected</th>
                     <th class="text-center">Reported</th>
                     <th class="text-center">Completeness</th>
