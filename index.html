@@ -125,6 +125,20 @@
         border-left: 4px solid #1e40af; border-bottom-color: transparent;
     }
     .side-tabs .nav-link.active .badge { background-color: rgba(255,255,255,0.2) !important; color: white !important; }
+    .side-tabs .nav-link.active .pulse-text { color: #fef08a !important; } /* High visibility on active state */
+
+    /* Pulsating indicator for filter mode */
+    .pulse-text {
+      animation: pulseAnim 1.5s infinite;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    @keyframes pulseAnim {
+      0% { opacity: 0.6; transform: translateX(0); }
+      50% { opacity: 1; transform: translateX(4px); }
+      100% { opacity: 0.6; transform: translateX(0); }
+    }
 
     /* Right Side: Table Area */
     .tab-content-area { flex: 1; padding: 20px; background: #f1f5f9; }
@@ -174,7 +188,6 @@
 
     /* MOBILE ADJUSTMENTS */
     @media (max-width: 768px) {
-      /* Un-stick headers on mobile to save screen space */
       .top-header { position: relative; height: auto; flex-direction: column; padding: 15px; gap: 12px; text-align: center; }
       .kpi-container { position: relative; top: auto; padding: 12px; }
       .brand-container { flex-direction: column; text-align: center; gap: 8px; }
@@ -186,7 +199,6 @@
       .analytics-row { height: 350px; margin-bottom: 15px; }
       .chart-area { min-width: 750px; }
       
-      /* Vertical stacking for tabs on mobile */
       .data-panel-content { flex-direction: column; }
       .side-tabs { max-width: 100%; border-right: none; border-bottom: 2px solid var(--border-color); }
       .tab-content-area { padding: 10px; }
@@ -281,6 +293,7 @@
     </div>
   </main>
 
+  <!-- OVERLAY LOADER -->
   <div class="loader-overlay" id="loader">
     <svg viewBox="0 0 100 100" width="130" height="130" class="warehouse-svg">
       <defs>
@@ -317,13 +330,13 @@
     </div>
   </div>
 
-  <!-- EXPORT MODAL & ERROR MODAL... -->
-  <div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+  <!-- EXPORT MODAL -->
+  <div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
         <div class="modal-header bg-light border-bottom" style="border-radius: 12px 12px 0 0;">
           <h5 class="modal-title fw-bold text-slate-800"><i class="bi bi-shield-check text-primary me-2"></i>Export Validation</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="exportCloseBtn"></button>
         </div>
         <div class="modal-body p-4">
           <div class="mb-4">
@@ -350,10 +363,21 @@
                <i class="bi bi-exclamation-triangle-fill me-1"></i> Range cannot exceed 10 weeks.
             </div>
           </div>
+
+          <!-- PROGRESS BAR CONTAINER (Hidden by default) -->
+          <div id="exportProgressContainer" style="display: none;" class="mt-4">
+             <div class="d-flex justify-content-between mb-1" style="font-size:0.85rem;">
+                 <span class="fw-bold text-primary"><i class="bi bi-arrow-repeat spin"></i> Compiling Data...</span>
+                 <span class="fw-bold text-muted">Please wait</span>
+             </div>
+             <div class="progress shadow-sm" style="height: 8px; border-radius: 4px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 100%"></div>
+             </div>
+          </div>
         </div>
         <div class="modal-footer border-top p-3 bg-light" style="border-radius: 0 0 12px 12px;">
-          <button type="button" class="btn btn-light border text-secondary fw-bold" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary fw-bold shadow-sm px-4" onclick="executeExport()">
+          <button type="button" class="btn btn-light border text-secondary fw-bold" data-bs-dismiss="modal" id="exportCancelBtn">Cancel</button>
+          <button type="button" class="btn btn-primary fw-bold shadow-sm px-4" id="exportSubmitBtn" onclick="executeExport()">
              <i class="bi bi-download me-1"></i> Download CSV
           </button>
         </div>
@@ -493,7 +517,7 @@
     }
 
     function showLoader(msg) {
-      document.getElementById('loaderText').innerText = `Establishing data link for ${activeEpiWeekStr}...`;
+      document.getElementById('loaderText').innerText = msg || `Establishing data link for ${activeEpiWeekStr}...`;
       document.getElementById('loader').style.display = 'flex';
     }
     function hideLoader() { document.getElementById('loader').style.display = 'none'; }
@@ -677,19 +701,16 @@
 
        let matchCount = 0;
        
-       // Note: Searches only within currently filtered dropdown context!
+       // Note: Searches only within currently filtered dropdown context
        let activeData = getFilteredDataByDropdown(); 
 
        activeData.forEach(row => {
            let isMatch = false;
            
-           // 1. Check parent Woreda/Facility name
+           // Deep checks across arrays
            if (row.Woreda && row.Woreda.toLowerCase().includes(input)) isMatch = true;
-           // 2. Check deeply into Reported List
            if (!isMatch && row.ReportedList && row.ReportedList.some(f => f.toLowerCase().includes(input))) isMatch = true;
-           // 3. Check deeply into Missing List
            if (!isMatch && row.NotReportedList && row.NotReportedList.some(f => f.toLowerCase().includes(input))) isMatch = true;
-           // 4. Check deeply into Alerts/Deaths Facility details
            if (!isMatch && row.DeathDetails && row.DeathDetails.some(d => d.facility && d.facility.toLowerCase().includes(input))) isMatch = true;
            
            if (isMatch) {
@@ -856,10 +877,16 @@
         let isHospitalCard = (z === "Public Hospitals");
         let iconHtml = isHospitalCard ? `<i class="bi bi-hospital-fill me-2" style="color: #be185d;"></i>` : `<i class="bi bi-geo-alt-fill me-2 text-secondary"></i>`;
         
+        // SPECIAL SIGN FOR FILTER MODE
+        let touchCueHtml = isFiltered ? `<div class="pulse-text text-primary mt-1" style="font-size:0.75rem;"><i class="bi bi-hand-index-thumb"></i> Click to view facilities</div>` : '';
+
         tabsHtml += `
         <button class="nav-link" id="${tabId}" data-bs-toggle="pill" data-bs-target="#${paneId}" type="button" role="tab" aria-selected="false">
-          <div class="d-flex align-items-center text-truncate pe-2" style="max-width: 65%;" title="${z}">
-             ${iconHtml} <span class="text-truncate">${z}</span>
+          <div class="d-flex flex-column align-items-start text-truncate pe-2" style="max-width: 65%;" title="${z}">
+             <div class="d-flex align-items-center">
+                ${iconHtml} <span class="text-truncate">${z}</span>
+             </div>
+             ${touchCueHtml}
           </div>
           <div class="ms-auto d-flex gap-1 align-items-center">
              <span class="badge ${getBadgeClass(rawComp)}" title="Completeness" style="font-size:0.7rem; width: 42px;">C: ${Math.round(comp)}%</span>
@@ -1031,8 +1058,19 @@
       
       document.getElementById('exportType').value = 'single';
       document.getElementById('exportZoneCode').value = '';
-      toggleExportType();
       
+      // Reset Modal UI State
+      document.getElementById('exportProgressContainer').style.display = 'none';
+      document.getElementById('exportZoneCode').disabled = false;
+      document.getElementById('exportType').disabled = false;
+      document.getElementById('exportFromWeek').disabled = false;
+      document.getElementById('exportToWeek').disabled = false;
+      document.getElementById('exportSubmitBtn').innerHTML = '<i class="bi bi-download me-1"></i> Download CSV';
+      document.getElementById('exportSubmitBtn').disabled = false;
+      document.getElementById('exportCancelBtn').disabled = false;
+      document.getElementById('exportCloseBtn').disabled = false;
+
+      toggleExportType();
       exportModalInstance.show();
     }
 
@@ -1042,7 +1080,6 @@
       let selectedExpectedCode = document.getElementById('subCityFilter').value;
       
       if (!inputCode) {
-          exportModalInstance.hide();
           showErrorPopup("Validation Missing", "A Sub City Code is required to download data.");
           return;
       }
@@ -1058,24 +1095,32 @@
       }
       
       document.getElementById('rangeError').style.display = 'none';
-      exportModalInstance.hide();
       
-      let exportMsg = document.getElementById('exportMessage');
-      exportMsg.innerText = 'Preparing Download...';
-      exportMsg.style.display = 'inline-block';
+      // Update Modal to display progress bar and disable inputs
+      let submitBtn = document.getElementById('exportSubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing...';
+      document.getElementById('exportCancelBtn').disabled = true;
+      document.getElementById('exportCloseBtn').disabled = true;
+      document.getElementById('exportZoneCode').disabled = true;
+      document.getElementById('exportType').disabled = true;
+      document.getElementById('exportFromWeek').disabled = true;
+      document.getElementById('exportToWeek').disabled = true;
+      document.getElementById('exportProgressContainer').style.display = 'block';
       
       google.script.run
-        .withSuccessHandler(triggerDownload)
+        .withSuccessHandler((res) => {
+           triggerDownload(res);
+        })
         .withFailureHandler(() => { 
-            exportMsg.style.display = 'none';
+            exportModalInstance.hide();
             showErrorPopup("Network Error", "The server failed to respond. Please try again.");
         })
         .getRawExportData(inputCode, selectedExpectedCode, type, p1, p2);
     }
 
     function triggerDownload(res) {
-      let exportMsg = document.getElementById('exportMessage');
-      exportMsg.style.display = 'none';
+      exportModalInstance.hide(); // Close modal immediately on logic return
       
       if (!res.success) {
         showErrorPopup("Authentication Failed", res.error);
