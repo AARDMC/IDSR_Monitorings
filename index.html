@@ -675,7 +675,15 @@
       }
 
       let rCompRaw = row.Completeness || 0;
-      let rTimeRaw = row.Reported > 0 ? ((row.Timeliness || 0) * (row.Expected / row.Reported)) : 0;
+      
+      // FIX: Calculate Timeliness relative strictly to Completeness (Reported) so it can logically exceed it
+      let rTimeRaw = 0;
+      if (rCompRaw > 0) {
+          rTimeRaw = ((row.Timeliness || 0) / rCompRaw) * 100;
+      } else if (row.Reported > 0) {
+          rTimeRaw = ((row.Timeliness || 0) * (row.Expected / row.Reported));
+      }
+      
       let rowComp = parseFloat(Math.min(100, rCompRaw).toFixed(1));
       let rowTime = parseFloat(Math.min(100, rTimeRaw).toFixed(1));
 
@@ -796,7 +804,15 @@
         zoneStats[zName].exp += row.Expected;
         zoneStats[zName].rep += row.Reported;
         
-        let correctedTimeliness = row.Reported > 0 ? ((row.Timeliness || 0) * (row.Expected / row.Reported)) : 0;
+        // Ensure consistent table logic for timeliness roll-up
+        let rCompRaw = row.Completeness || 0;
+        let correctedTimeliness = 0;
+        if (rCompRaw > 0) {
+            correctedTimeliness = ((row.Timeliness || 0) / rCompRaw) * 100;
+        } else if (row.Reported > 0) {
+            correctedTimeliness = ((row.Timeliness || 0) * (row.Expected / row.Reported));
+        }
+
         let cleanRowTime = Math.min(100, correctedTimeliness); 
         zoneStats[zName].timeSum += (cleanRowTime * row.Reported);
         zoneStats[zName].deaths += row.TotalDeaths;
@@ -882,13 +898,14 @@
           </tr>`;
       });
 
+      // Visual parity applied to table grand total
       contentHtml += `
           <tr class="grand-total-row">
             <td class="text-end text-uppercase">${overviewTotalLabel}</td>
             <td class="text-center">${kpi.exp}</td>
             <td class="text-center">${kpi.rep}</td>
-            <td class="text-center">${globalComp.toFixed(1)}%</td>
-            <td class="text-center">${globalTime.toFixed(1)}%</td>
+            <td class="text-center"><span class="badge ${getBadgeClass(globalComp)}">${globalComp.toFixed(1)}%</span></td>
+            <td class="text-center"><span class="badge ${getBadgeClass(globalTime)}">${globalTime.toFixed(1)}%</span></td>
             <td class="text-center">${kpi.deaths > 0 ? kpi.deaths : '-'}</td>
           </tr></tbody></table></div></div></div>`;
 
@@ -956,12 +973,13 @@
           contentHtml += generateRowHtml(row, false);
         });
         
+        // Visual parity applied to table grand total
         contentHtml += `<tr class="grand-total-row">
             <td class="text-end text-uppercase">Total</td>
             <td class="text-center">${stats.exp}</td>
             <td class="text-center">${stats.rep}</td>
-            <td class="text-center">${comp}%</td>
-            <td class="text-center">${time}%</td>
+            <td class="text-center"><span class="badge ${getBadgeClass(rawComp)}">${comp}%</span></td>
+            <td class="text-center"><span class="badge ${getBadgeClass(rawTime)}">${time}%</span></td>
             <td class="text-center">${stats.deaths > 0 ? stats.deaths : '-'}</td>
           </tr></tbody></table></div></div></div>`;
       }
