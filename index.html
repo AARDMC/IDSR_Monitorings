@@ -675,9 +675,9 @@
       }
 
       let rCompRaw = row.Completeness || 0;
-      let rTimeRaw = row.Timeliness || 0;
-      let rowComp = Math.min(100, rCompRaw);
-      let rowTime = Math.min(100, rTimeRaw);
+      let rTimeRaw = row.Reported > 0 ? ((row.Timeliness || 0) * (row.Expected / row.Reported)) : 0;
+      let rowComp = parseFloat(Math.min(100, rCompRaw).toFixed(1));
+      let rowTime = parseFloat(Math.min(100, rTimeRaw).toFixed(1));
 
       let displayReported = row.Reported;
       if (hoverHtml) {
@@ -796,7 +796,8 @@
         zoneStats[zName].exp += row.Expected;
         zoneStats[zName].rep += row.Reported;
         
-        let cleanRowTime = Math.min(100, row.Timeliness); 
+        let correctedTimeliness = row.Reported > 0 ? ((row.Timeliness || 0) * (row.Expected / row.Reported)) : 0;
+        let cleanRowTime = Math.min(100, correctedTimeliness); 
         zoneStats[zName].timeSum += (cleanRowTime * row.Reported);
         zoneStats[zName].deaths += row.TotalDeaths;
 
@@ -1146,12 +1147,12 @@
            triggerDownload(res);
         })
         .withFailureHandler((err) => { 
-            exportModalInstance.hide();
-            let msg = "The server failed to respond. Please try again.";
-            if (err) {
-               msg = (typeof err === 'string') ? err : (err.message || msg);
-            }
-            showErrorPopup("Export Error", msg);
+             exportModalInstance.hide();
+             let msg = "The server failed to respond. Please try again.";
+             if (err) {
+                msg = (typeof err === 'string') ? err : (err.message || msg);
+             }
+             showErrorPopup("Export Error", msg);
         })
         .getRawExportData(inputCode, selectedExpectedCode, type, p1, p2);
     }
