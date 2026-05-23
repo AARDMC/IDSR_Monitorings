@@ -220,13 +220,16 @@
       .data-panel-header { flex-direction: column; gap: 10px; align-items: stretch !important; padding: 12px 10px; text-align: center; }
       .data-panel-header > div { width: 100% !important; justify-content: center !important; }
       
-      .data-panel-content { flex-direction: column; }
+      /* Important Mobile Override to fix Flex-box zero height bugs on iOS Safari */
+      .data-panel-content { display: block; }
       
       /* Horizontal Scrollable Pills for Tabs */
       .side-tabs { 
+        display: flex;
+        width: 100%;
         max-width: 100%; 
         border-right: none; 
-        border-bottom: 1px solid var(--border-color); 
+        border-bottom: 2px solid var(--border-color); 
         flex-direction: row !important; 
         overflow-x: auto; 
         flex-wrap: nowrap; 
@@ -254,7 +257,7 @@
       .side-tabs .nav-link .d-flex.align-items-center { width: 100%; max-width: 100% !important; margin-bottom: 8px; }
       .side-tabs .nav-link .ms-auto { margin-left: 0 !important; width: 100%; justify-content: flex-start; gap: 4px !important; }
       
-      .tab-content-area { padding: 10px; }
+      .tab-content-area { display: block; width: 100%; padding: 10px; min-height: 300px; }
       .table-responsive { -webkit-overflow-scrolling: touch; border: 1px solid #e2e8f0; border-radius: 8px; }
       
       .popover { max-width: 280px; } /* Prevent popovers from overflowing mobile screen */
@@ -547,6 +550,17 @@
           fetchData();
         })
         .getCurrentEpiWeekInfo();
+        
+      // Ensure smooth scroll to table view on mobile when a tab is clicked
+      document.addEventListener('shown.bs.tab', function (event) {
+          if (window.innerWidth <= 768) {
+              let contentArea = document.querySelector('.tab-content-area');
+              if(contentArea) {
+                  let y = contentArea.getBoundingClientRect().top + window.scrollY - 85; 
+                  window.scrollTo({top: y, behavior: 'smooth'});
+              }
+          }
+      });
     });
 
     function showErrorPopup(title, message) {
