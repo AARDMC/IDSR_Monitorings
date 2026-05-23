@@ -675,15 +675,8 @@
       }
 
       let rCompRaw = row.Completeness || 0;
-      
-      // FIX: Calculate Timeliness relative strictly to Completeness (Reported) so it can logically exceed it
-      let rTimeRaw = 0;
-      if (rCompRaw > 0) {
-          rTimeRaw = ((row.Timeliness || 0) / rCompRaw) * 100;
-      } else if (row.Reported > 0) {
-          rTimeRaw = ((row.Timeliness || 0) * (row.Expected / row.Reported));
-      }
-      
+      let rTimeRaw = Math.min(row.Timeliness || 0, rCompRaw); // Timeliness strictly cannot exceed completeness
+
       let rowComp = parseFloat(Math.min(100, rCompRaw).toFixed(1));
       let rowTime = parseFloat(Math.min(100, rTimeRaw).toFixed(1));
 
@@ -804,16 +797,9 @@
         zoneStats[zName].exp += row.Expected;
         zoneStats[zName].rep += row.Reported;
         
-        // Ensure consistent table logic for timeliness roll-up
         let rCompRaw = row.Completeness || 0;
-        let correctedTimeliness = 0;
-        if (rCompRaw > 0) {
-            correctedTimeliness = ((row.Timeliness || 0) / rCompRaw) * 100;
-        } else if (row.Reported > 0) {
-            correctedTimeliness = ((row.Timeliness || 0) * (row.Expected / row.Reported));
-        }
+        let cleanRowTime = Math.min(row.Timeliness || 0, rCompRaw); // Timeliness strictly cannot exceed completeness
 
-        let cleanRowTime = Math.min(100, correctedTimeliness); 
         zoneStats[zName].timeSum += (cleanRowTime * row.Reported);
         zoneStats[zName].deaths += row.TotalDeaths;
 
@@ -825,6 +811,8 @@
 
       let globalCompRaw = kpi.exp > 0 ? (kpi.rep / kpi.exp) * 100 : 0;
       let globalTimeRaw = kpi.rep > 0 ? (kpi.timeSum / kpi.rep) : 0;
+      globalTimeRaw = Math.min(globalTimeRaw, globalCompRaw); // Cap global average
+      
       let globalComp = Math.min(100, globalCompRaw);
       let globalTime = Math.min(100, globalTimeRaw);
       
@@ -882,6 +870,8 @@
           let s = zoneStats[z];
           let c = s.exp > 0 ? (s.rep / s.exp) * 100 : 0;
           let t = s.rep > 0 ? (s.timeSum / s.rep) : 0;
+          t = Math.min(t, c); // Cap regional average
+          
           let isHosp = (z === "Public Hospitals");
           let dC = s.deaths > 0 ? `<span class="badge-death">${s.deaths}</span>` : '<span class="text-muted">-</span>';
           
@@ -918,6 +908,7 @@
         
         let rawComp = stats.exp > 0 ? (stats.rep / stats.exp) * 100 : 0;
         let rawTime = stats.rep > 0 ? (stats.timeSum / stats.rep) : 0;
+        rawTime = Math.min(rawTime, rawComp); // Cap sub-city average
         
         let comp = Math.min(100, rawComp).toFixed(1);
         let time = Math.min(100, rawTime).toFixed(1);
@@ -1008,7 +999,8 @@
         let s = zoneStats[z];
         
         let cVal = s.exp > 0 ? parseFloat(Math.min(100, (s.rep / s.exp) * 100).toFixed(1)) : 0;
-        let tVal = s.rep > 0 ? parseFloat(Math.min(100, s.timeSum / s.rep).toFixed(1)) : 0;
+        let tRaw = s.rep > 0 ? (s.timeSum / s.rep) : 0;
+        let tVal = parseFloat(Math.min(tRaw, cVal).toFixed(1)); // Cap at cVal
         
         compData.push(cVal);
         timeData.push(tVal);
