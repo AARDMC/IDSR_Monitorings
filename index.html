@@ -653,15 +653,38 @@
       });
     }
 
-    // HELPER: Generate Table Row HTML
+    // HELPER: Generate Table Row HTML (Calculates purely from the raw sheet numbers)
     function generateRowHtml(row, showZoneCol) {
+      let expected = row.Expected || 0;
+      let reported = row.Reported || 0;
+      
+      // Accurately capture the Timely count from the sheet row
+      let timelyCount = 0;
+      if (row.Timely !== undefined) timelyCount = row.Timely;
+      else if (row.OnTime !== undefined) timelyCount = row.OnTime;
+      else if (row.Timeliness !== undefined) {
+          // If the sheet provides a percentage > 100 due to mismatched formulas, reverse-engineer the count.
+          if (row.Timeliness > expected && expected > 0) timelyCount = (row.Timeliness / 100) * expected;
+          else timelyCount = row.Timeliness;
+      }
+      
+      // Enforce fundamental rule: Timely Reports cannot exceed Total Received Reports
+      timelyCount = Math.min(timelyCount, reported);
+
+      let rCompRaw = expected > 0 ? (reported / expected) * 100 : 0;
+      let rTimeRaw = expected > 0 ? (timelyCount / expected) * 100 : 0;
+      
+      let rowComp = parseFloat(Math.min(100, rCompRaw).toFixed(1));
+      let rowTime = parseFloat(Math.min(100, rTimeRaw).toFixed(1));
+
+      // Tooltips
       let hoverHtml = '';
       if (row.ReportedList && row.ReportedList.length > 0) {
          hoverHtml += `<div><strong class='d-block pb-1 mb-2 border-bottom border-secondary text-slate-800'>Reported (${row.Reported})</strong>`;
          hoverHtml += `<div class='text-success fw-bold' style='font-size:0.8rem; margin-bottom:4px;'>✓ ${row.ReportedList.join("</div><div class='text-success fw-bold' style='font-size:0.8rem; margin-bottom:4px;'>✓ ")}</div></div>`;
       }
       if (row.NotReportedList && row.NotReportedList.length > 0) {
-         hoverHtml += `<div class='mt-3'><strong class='d-block pb-1 mb-2 border-bottom border-secondary text-slate-800'>Missing (${row.Expected - row.Reported})</strong>`;
+         hoverHtml += `<div class='mt-3'><strong class='d-block pb-1 mb-2 border-bottom border-secondary text-slate-800'>Missing (${expected - reported})</strong>`;
          hoverHtml += `<div class='text-secondary' style='font-size:0.8rem; margin-bottom:4px;'>• ${row.NotReportedList.join("</div><div class='text-secondary' style='font-size:0.8rem; margin-bottom:4px;'>• ")}</div></div>`;
       }
       let safeHoverHtml = hoverHtml.replace(/"/g, '&quot;');
@@ -674,15 +697,9 @@
          dContent = `<span class="badge-death" tabindex="0" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-container="body" data-bs-html="true" data-bs-content="${safeDHtml}" style="cursor: pointer; outline: none;">${row.TotalDeaths}</span>`;
       }
 
-      let rCompRaw = row.Completeness || 0;
-      let rTimeRaw = Math.min(row.Timeliness || 0, rCompRaw); // Timeliness strictly cannot exceed completeness
-
-      let rowComp = parseFloat(Math.min(100, rCompRaw).toFixed(1));
-      let rowTime = parseFloat(Math.min(100, rTimeRaw).toFixed(1));
-
-      let displayReported = row.Reported;
+      let displayReported = reported;
       if (hoverHtml) {
-          displayReported = `<span tabindex="0" class="text-primary fw-bold" style="cursor: help; outline: none; border-bottom: 1px dashed var(--primary);" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-container="body" data-bs-html="true" data-bs-content="${safeHoverHtml}">${row.Reported}</span>`;
+          displayReported = `<span tabindex="0" class="text-primary fw-bold" style="cursor: help; outline: none; border-bottom: 1px dashed var(--primary);" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-container="body" data-bs-html="true" data-bs-content="${safeHoverHtml}">${reported}</span>`;
       }
 
       let zoneCol = showZoneCol ? `<td><span class="badge bg-light text-secondary border border-secondary shadow-sm">${row.Zone}</span></td>` : '';
@@ -690,7 +707,7 @@
       return `<tr>
         ${zoneCol}
         <td class="fw-bold text-main">${row.Woreda}</td>
-        <td class="text-center fw-semibold">${row.Expected}</td>
+        <td class="text-center fw-semibold">${expected}</td>
         <td class="text-center fw-semibold">${displayReported}</td>
         <td class="text-center"><span class="badge ${getBadgeClass(rCompRaw)}">${rowComp}%</span></td>
         <td class="text-center"><span class="badge ${getBadgeClass(rTimeRaw)}">${rowTime}%</span></td>
@@ -784,35 +801,41 @@
 
       let groupedZones = {};
       let zoneStats = {};
-      let kpi = { exp: 0, rep: 0, timeSum: 0, deaths: 0 };
+      let kpi = { exp: 0, rep: 0, timely: 0, deaths: 0 };
       
       data.forEach(row => {
         let zName = row.Zone;
         if (!groupedZones[zName]) {
           groupedZones[zName] = [];
-          zoneStats[zName] = { exp: 0, rep: 0, timeSum: 0, deaths: 0 };
+          zoneStats[zName] = { exp: 0, rep: 0, timely: 0, deaths: 0 };
         }
         groupedZones[zName].push(row);
         
-        zoneStats[zName].exp += row.Expected;
-        zoneStats[zName].rep += row.Reported;
+        let expected = row.Expected || 0;
+        let reported = row.Reported || 0;
         
-        let rCompRaw = row.Completeness || 0;
-        let cleanRowTime = Math.min(row.Timeliness || 0, rCompRaw); // Timeliness strictly cannot exceed completeness
+        let timelyCount = 0;
+        if (row.Timely !== undefined) timelyCount = row.Timely;
+        else if (row.OnTime !== undefined) timelyCount = row.OnTime;
+        else if (row.Timeliness !== undefined) {
+            if (row.Timeliness > expected && expected > 0) timelyCount = (row.Timeliness / 100) * expected;
+            else timelyCount = row.Timeliness;
+        }
+        timelyCount = Math.min(timelyCount, reported);
 
-        zoneStats[zName].timeSum += (cleanRowTime * row.Reported);
-        zoneStats[zName].deaths += row.TotalDeaths;
+        zoneStats[zName].exp += expected;
+        zoneStats[zName].rep += reported;
+        zoneStats[zName].timely += timelyCount;
+        zoneStats[zName].deaths += row.TotalDeaths || 0;
 
-        kpi.exp += row.Expected;
-        kpi.rep += row.Reported;
-        kpi.timeSum += (cleanRowTime * row.Reported);
-        kpi.deaths += row.TotalDeaths;
+        kpi.exp += expected;
+        kpi.rep += reported;
+        kpi.timely += timelyCount;
+        kpi.deaths += row.TotalDeaths || 0;
       });
 
       let globalCompRaw = kpi.exp > 0 ? (kpi.rep / kpi.exp) * 100 : 0;
-      let globalTimeRaw = kpi.rep > 0 ? (kpi.timeSum / kpi.rep) : 0;
-      globalTimeRaw = Math.min(globalTimeRaw, globalCompRaw); // Cap global average
-      
+      let globalTimeRaw = kpi.exp > 0 ? (kpi.timely / kpi.exp) * 100 : 0;
       let globalComp = Math.min(100, globalCompRaw);
       let globalTime = Math.min(100, globalTimeRaw);
       
@@ -869,8 +892,7 @@
       sortedZoneKeys.forEach(z => {
           let s = zoneStats[z];
           let c = s.exp > 0 ? (s.rep / s.exp) * 100 : 0;
-          let t = s.rep > 0 ? (s.timeSum / s.rep) : 0;
-          t = Math.min(t, c); // Cap regional average
+          let t = s.exp > 0 ? (s.timely / s.exp) * 100 : 0;
           
           let isHosp = (z === "Public Hospitals");
           let dC = s.deaths > 0 ? `<span class="badge-death">${s.deaths}</span>` : '<span class="text-muted">-</span>';
@@ -907,8 +929,7 @@
         let stats = zoneStats[z];
         
         let rawComp = stats.exp > 0 ? (stats.rep / stats.exp) * 100 : 0;
-        let rawTime = stats.rep > 0 ? (stats.timeSum / stats.rep) : 0;
-        rawTime = Math.min(rawTime, rawComp); // Cap sub-city average
+        let rawTime = stats.exp > 0 ? (stats.timely / stats.exp) * 100 : 0;
         
         let comp = Math.min(100, rawComp).toFixed(1);
         let time = Math.min(100, rawTime).toFixed(1);
@@ -999,8 +1020,7 @@
         let s = zoneStats[z];
         
         let cVal = s.exp > 0 ? parseFloat(Math.min(100, (s.rep / s.exp) * 100).toFixed(1)) : 0;
-        let tRaw = s.rep > 0 ? (s.timeSum / s.rep) : 0;
-        let tVal = parseFloat(Math.min(tRaw, cVal).toFixed(1)); // Cap at cVal
+        let tVal = s.exp > 0 ? parseFloat(Math.min(100, (s.timely / s.exp) * 100).toFixed(1)) : 0;
         
         compData.push(cVal);
         timeData.push(tVal);
