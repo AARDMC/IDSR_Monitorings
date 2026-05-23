@@ -165,26 +165,46 @@
     .popover-body { max-height: 250px; overflow-y: auto; font-family: 'Inter', sans-serif; }
     .badge-death { background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; padding: 4px 8px; border-radius: 12px; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);}
 
-    /* CUSTOM HIGH-TECH SVG LOADER */
-    .loader-overlay { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
-    .warehouse-svg { margin-bottom: 15px; filter: drop-shadow(0 15px 15px rgba(37, 99, 235, 0.2)); }
-    .server-box { stroke: #1e40af; stroke-width: 1.5; transform-origin: center; animation: floatY 4s ease-in-out infinite alternate; }
-    .flow-in { stroke-dasharray: 6; animation: dashStream 1s linear infinite reverse; }
-    .flow-out { stroke-dasharray: 6; animation: dashStream 1s linear infinite; }
-    .blink-fast { animation: flashPulse 0.8s infinite alternate; }
-    .blink-slow { animation: flashPulse 1.5s infinite alternate; }
-    .data-pulse-1 { stroke-dasharray: 10 5; animation: dashStream 2s linear infinite; }
-    .data-pulse-2 { stroke-dasharray: 8 6; animation: dashStream 1.5s linear infinite reverse; }
-    .data-pulse-3 { stroke-dasharray: 12 4; animation: dashStream 2.5s linear infinite; }
-    @keyframes floatY { 0% { transform: translateY(-1.5px); } 100% { transform: translateY(1.5px); } }
-    @keyframes dashStream { to { stroke-dashoffset: -20; } }
-    @keyframes flashPulse { 0% { opacity: 0.3; } 100% { opacity: 1; filter: drop-shadow(0 0 4px #34d399); } }
-    .loader-brand { text-align: center; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; gap: 2px;}
-    .city-text { font-size: 0.9rem; font-weight: 700; color: #64748b; letter-spacing: 6px; margin-bottom: -4px; text-transform: uppercase; }
-    .data-text-group { display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; }
-    .letter-box { display: inline-block; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 0px 6px; border-radius: 6px; margin: 0 1px; box-shadow: 0 4px 6px rgba(37,99,235,0.3); font-weight: 800;}
-    .terminal-status { font-family: monospace; font-size: 0.8rem; color: #475569; background: #f1f5f9; padding: 6px 16px; border-radius: 20px; border: 1px solid #e2e8f0; display: inline-flex; align-items: center; gap: 8px; margin-top: 15px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);}
-    .terminal-status i { color: #2563eb; animation: flashPulse 1s infinite alternate; }
+    /* AMAZING NEW LOADER STYLES */
+    .loader-overlay { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: rgba(15, 23, 42, 0.93); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+      z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; 
+      color: #ffffff; transition: opacity 0.4s ease;
+    }
+    
+    /* Glowing Orbs */
+    .loader-glow-1, .loader-glow-2 { position: absolute; border-radius: 50%; filter: blur(90px); z-index: -1; }
+    .loader-glow-1 { width: 350px; height: 350px; background: #2563eb; opacity: 0.35; top: 15%; left: 15%; animation: floatGlow 8s ease-in-out infinite alternate; }
+    .loader-glow-2 { width: 300px; height: 300px; background: #10b981; opacity: 0.25; bottom: 15%; right: 15%; animation: floatGlow 8s ease-in-out infinite alternate-reverse; }
+    @keyframes floatGlow { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(40px, 40px) scale(1.1); } }
+
+    /* Kinetic Rings */
+    .loader-rings { position: relative; width: 140px; height: 140px; display: flex; justify-content: center; align-items: center; margin-bottom: 35px; }
+    .ring { position: absolute; border-radius: 50%; border: 3px solid transparent; }
+    .ring-1 { width: 100%; height: 100%; border-top-color: #3b82f6; border-left-color: #3b82f6; animation: spinRing 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; }
+    .ring-2 { width: 75%; height: 75%; border-bottom-color: #10b981; border-right-color: #10b981; animation: spinRing 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite reverse; }
+    .ring-3 { width: 50%; height: 50%; border-top-color: #f59e0b; animation: spinRing 1s linear infinite; }
+    .loader-core { width: 22%; height: 22%; background: #ffffff; border-radius: 50%; box-shadow: 0 0 15px #ffffff, 0 0 35px #3b82f6; animation: pulseCore 1.5s ease-in-out infinite alternate; }
+    
+    @keyframes spinRing { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes pulseCore { 0% { transform: scale(0.9); box-shadow: 0 0 10px #ffffff, 0 0 20px #3b82f6; } 100% { transform: scale(1.3); box-shadow: 0 0 25px #ffffff, 0 0 50px #3b82f6; } }
+
+    /* Typography */
+    .loader-title { 
+      font-size: 1.7rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; 
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; text-align: center; 
+    }
+    .loader-subtitle { font-size: 0.9rem; font-weight: 600; color: #94a3b8; letter-spacing: 6px; text-transform: uppercase; margin-bottom: 35px; text-align: center; }
+
+    /* Status Pill */
+    .loader-status { 
+      background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 30px; 
+      padding: 12px 28px; font-family: monospace; font-size: 0.95rem; color: #34d399; 
+      display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); backdrop-filter: blur(5px);
+    }
+    .loader-status i { font-size: 1.2rem; animation: blinker 1s infinite alternate; text-shadow: 0 0 8px rgba(52, 211, 153, 0.6); }
+    @keyframes blinker { 0% { opacity: 0.3; } 100% { opacity: 1; filter: drop-shadow(0 0 6px #34d399); } }
 
     /* SEAMLESS MOBILE OPTIMIZATIONS */
     @media (max-width: 768px) {
@@ -261,6 +281,11 @@
       .table-responsive { -webkit-overflow-scrolling: touch; border: 1px solid #e2e8f0; border-radius: 8px; }
       
       .popover { max-width: 280px; } /* Prevent popovers from overflowing mobile screen */
+      
+      /* Mobile Loader Adjustments */
+      .loader-title { font-size: 1.3rem; }
+      .loader-subtitle { font-size: 0.75rem; letter-spacing: 4px; }
+      .loader-rings { width: 110px; height: 110px; }
     }
   </style>
 </head>
@@ -357,40 +382,23 @@
     </div>
   </main>
 
-  <!-- OVERLAY LOADER -->
+  <!-- AMAZING OVERLAY LOADER -->
   <div class="loader-overlay" id="loader">
-    <svg viewBox="0 0 100 100" width="130" height="130" class="warehouse-svg">
-      <defs>
-        <linearGradient id="serverGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#eff6ff"/>
-          <stop offset="100%" stop-color="#dbeafe"/>
-        </linearGradient>
-      </defs>
-      <path d="M0 27.5 L20 27.5 M0 52.5 L20 52.5 M0 77.5 L20 77.5" stroke="#94a3b8" stroke-width="2" class="flow-in"/>
-      <path d="M80 27.5 L100 27.5 M80 52.5 L100 52.5 M80 77.5 L100 77.5" stroke="#94a3b8" stroke-width="2" class="flow-out"/>
-      <rect x="20" y="20" width="60" height="15" rx="3" fill="url(#serverGrad)" class="server-box" style="animation-delay: 0s;"/>
-      <rect x="20" y="45" width="60" height="15" rx="3" fill="url(#serverGrad)" class="server-box" style="animation-delay: 0.3s;"/>
-      <rect x="20" y="70" width="60" height="15" rx="3" fill="url(#serverGrad)" class="server-box" style="animation-delay: 0.6s;"/>
-      <circle cx="30" cy="27.5" r="2.5" fill="#34d399" class="blink-fast"/>
-      <circle cx="30" cy="52.5" r="2.5" fill="#fbbf24" class="blink-slow"/>
-      <circle cx="30" cy="77.5" r="2.5" fill="#34d399" class="blink-fast"/>
-      <line x1="40" y1="27.5" x2="65" y2="27.5" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" class="data-pulse-1"/>
-      <line x1="40" y1="52.5" x2="55" y2="52.5" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" class="data-pulse-2"/>
-      <line x1="40" y1="77.5" x2="70" y2="77.5" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" class="data-pulse-3"/>
-    </svg>
-
-    <div class="loader-brand">
-      <div class="city-text">ADDIS ABABA CITY</div>
-      <div class="data-text-group">
-        <div>
-          <span class="letter-box">D</span><span class="letter-box">A</span><span class="letter-box">T</span><span class="letter-box">A</span>
-        </div>
-        <span class="ms-2">MANAGEMENT CENTER</span>
-      </div>
+    <div class="loader-glow-1"></div>
+    <div class="loader-glow-2"></div>
+    
+    <div class="loader-rings">
+      <div class="ring ring-1"></div>
+      <div class="ring ring-2"></div>
+      <div class="ring ring-3"></div>
+      <div class="loader-core"></div>
     </div>
     
-    <div class="terminal-status">
-       <i class="bi bi-cpu-fill"></i> <span id="loaderText">Synchronizing Analytics...</span>
+    <div class="loader-title">Addis Ababa City</div>
+    <div class="loader-subtitle">Data Management Center</div>
+    
+    <div class="loader-status">
+       <i class="bi bi-broadcast"></i> <span id="loaderText">Synchronizing Analytics...</span>
     </div>
   </div>
 
@@ -592,7 +600,7 @@
     }
 
     function showLoader(msg) {
-      document.getElementById('loaderText').innerText = msg || `Establishing data link for ${activeEpiWeekStr}...`;
+      document.getElementById('loaderText').innerText = msg || `Synchronizing Analytics...`;
       document.getElementById('loader').style.display = 'flex';
     }
     function hideLoader() { document.getElementById('loader').style.display = 'none'; }
@@ -604,7 +612,7 @@
     }
 
     function fetchData() {
-      showLoader();
+      showLoader(`Loading ${activeEpiWeekStr}...`);
       document.getElementById('dashboardScreen').style.opacity = '0.5';
       google.script.run.withSuccessHandler(renderDashboard).fetchDashboardData(currentSessionCode, activeEpiWeekStr);
     }
