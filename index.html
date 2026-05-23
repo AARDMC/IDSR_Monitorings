@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <base target="_top">
   
   <!-- BROWSER TAB ICON (FAVICON) -->
@@ -160,7 +160,7 @@
     .bg-low { background-color: #ef4444 !important; color: white !important; } 
 
     /* POPOVER STYLE FIXES FOR VISIBILITY */
-    .popover { border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid var(--border-color); max-width: 320px; }
+    .popover { border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 1px solid var(--border-color); max-width: 320px; z-index: 1070; }
     .popover-header { background: #f8fafc; border-bottom: 1px solid var(--border-color); font-weight: 700; border-radius: 10px 10px 0 0; }
     .popover-body { max-height: 250px; overflow-y: auto; font-family: 'Inter', sans-serif; }
     .badge-death { background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; padding: 4px 8px; border-radius: 12px; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);}
@@ -186,22 +186,78 @@
     .terminal-status { font-family: monospace; font-size: 0.8rem; color: #475569; background: #f1f5f9; padding: 6px 16px; border-radius: 20px; border: 1px solid #e2e8f0; display: inline-flex; align-items: center; gap: 8px; margin-top: 15px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);}
     .terminal-status i { color: #2563eb; animation: flashPulse 1s infinite alternate; }
 
-    /* MOBILE ADJUSTMENTS */
+    /* SEAMLESS MOBILE OPTIMIZATIONS */
     @media (max-width: 768px) {
-      .top-header { position: relative; height: auto; flex-direction: column; padding: 15px; gap: 12px; text-align: center; }
-      .kpi-container { position: relative; top: auto; padding: 12px; }
-      .brand-container { flex-direction: column; text-align: center; gap: 8px; }
-      .brand-logo { height: 55px; }
-      .controls-wrapper { flex-wrap: wrap; justify-content: center; width: 100%; }
+      .top-header { 
+        position: relative; height: auto; flex-direction: column; 
+        padding: 12px 10px; gap: 10px; text-align: center; 
+      }
+      .brand-container { flex-direction: column; text-align: center; gap: 4px; }
+      .brand-logo { height: 42px; }
+      .brand-title { font-size: 1.1rem; }
+      
+      .controls-wrapper { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 8px; 
+        width: 100%; 
+      }
+      #weekLabel { grid-column: 1 / -1; margin-bottom: 0px; text-align: center; display: block; width: 100%; }
+      .controls-wrapper select, .controls-wrapper button { width: 100% !important; font-size: 0.8rem; height: 38px; justify-content: center; }
+      
+      .kpi-container { position: relative; top: auto; padding: 10px; }
+      .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; height: auto; }
+      .kpi-card { width: 100%; min-width: 0; padding: 12px 10px; flex: auto; }
+      .kpi-card:last-child { grid-column: 1 / -1; } /* Alerts card spans full width */
+      .kpi-label { font-size: 0.7rem; white-space: normal; line-height: 1.2; margin-bottom: 4px; }
+      
       .main-workspace { padding: 10px; }
-      .kpi-row { flex-wrap: wrap; height: auto; }
-      .kpi-card { flex: 1 1 calc(50% - 12px); min-width: 140px; padding: 12px; }
-      .analytics-row { height: 350px; margin-bottom: 15px; }
-      .chart-area { min-width: 750px; }
+      
+      .analytics-row { height: 300px; margin-bottom: 10px; }
+      .chart-area { min-width: 650px; }
+      .chart-wrapper { -webkit-overflow-scrolling: touch; }
+      
+      .data-panel-header { flex-direction: column; gap: 10px; align-items: stretch !important; padding: 12px 10px; text-align: center; }
+      .data-panel-header > div { width: 100% !important; justify-content: center !important; }
       
       .data-panel-content { flex-direction: column; }
-      .side-tabs { max-width: 100%; border-right: none; border-bottom: 2px solid var(--border-color); }
+      
+      /* Horizontal Scrollable Pills for Tabs */
+      .side-tabs { 
+        max-width: 100%; 
+        border-right: none; 
+        border-bottom: 1px solid var(--border-color); 
+        flex-direction: row !important; 
+        overflow-x: auto; 
+        flex-wrap: nowrap; 
+        padding: 10px 5px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; 
+      }
+      .side-tabs::-webkit-scrollbar { display: none; }
+      
+      .side-tabs .nav-link {
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin: 0 4px;
+        padding: 8px 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        min-width: 160px;
+        background: #ffffff;
+      }
+      .side-tabs .nav-link.active {
+        border-left: none;
+        border-bottom: none;
+      }
+      .side-tabs .nav-link .d-flex.align-items-center { width: 100%; max-width: 100% !important; margin-bottom: 8px; }
+      .side-tabs .nav-link .ms-auto { margin-left: 0 !important; width: 100%; justify-content: flex-start; gap: 4px !important; }
+      
       .tab-content-area { padding: 10px; }
+      .table-responsive { -webkit-overflow-scrolling: touch; border: 1px solid #e2e8f0; border-radius: 8px; }
+      
+      .popover { max-width: 280px; } /* Prevent popovers from overflowing mobile screen */
     }
   </style>
 </head>
@@ -217,11 +273,11 @@
     </div>
     
     <div class="controls-wrapper">
-      <span id="weekLabel" class="text-muted fw-bold me-1" style="font-size: 0.85rem;"></span>
-      <select class="form-select text-primary" id="weekDropdown" onchange="selectWeek(this.value)" style="width: auto;"></select>
+      <span id="weekLabel" class="text-muted fw-bold" style="font-size: 0.85rem;"></span>
+      <select class="form-select text-primary" id="weekDropdown" onchange="selectWeek(this.value)"></select>
       
       <!-- DROPDOWN FILTER -->
-      <select class="form-select text-primary" id="subCityFilter" style="width: auto;" onchange="applyFilters()">
+      <select class="form-select text-primary" id="subCityFilter" onchange="applyFilters()">
         <option value="ALL" selected>Region Overview (All Sub Cities)</option>
       </select>
       
@@ -281,7 +337,7 @@
         <div class="d-flex align-items-center gap-3 w-50 justify-content-end">
            <div class="input-group input-group-sm w-100 shadow-sm border rounded bg-white">
               <span class="input-group-text bg-transparent border-0 text-muted"><i class="bi bi-search"></i></span>
-              <input type="text" id="globalSearchInput" class="form-control border-0 shadow-none bg-transparent" placeholder="Deep Search: Enter Woreda or specific Health Facility..." onkeyup="handleGlobalSearch()">
+              <input type="text" id="globalSearchInput" class="form-control border-0 shadow-none bg-transparent" placeholder="Deep Search: Enter Woreda or Facility..." onkeyup="handleGlobalSearch()">
            </div>
         </div>
       </div>
@@ -647,10 +703,13 @@
     }
 
     function initPopovers() {
-      let popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-      popoverTriggerList.map(function (popoverTriggerEl) {
-        return new bootstrap.Popover(popoverTriggerEl);
-      });
+      // Small delay ensures elements are painted before attaching popovers
+      setTimeout(() => {
+        let popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+        popoverTriggerList.map(function (popoverTriggerEl) {
+          return new bootstrap.Popover(popoverTriggerEl);
+        });
+      }, 100);
     }
 
     // HELPER: Generate Table Row HTML (Calculates purely from the raw sheet numbers)
@@ -856,7 +915,7 @@
       // REGION OVERVIEW TAB (DEFAULT)
       tabsHtml += `
       <button class="nav-link active" id="tab-btn-region" data-bs-toggle="pill" data-bs-target="#tab-pane-region" type="button" role="tab" aria-selected="true">
-        <div class="d-flex align-items-center text-truncate pe-2" style="max-width: 65%;">
+        <div class="d-flex align-items-center text-truncate pe-2">
            <i class="bi bi-globe me-2 text-primary"></i> <span class="text-truncate fw-bold text-primary">${overviewTitle}</span>
         </div>
         <div class="ms-auto d-flex gap-1 align-items-center">
@@ -874,7 +933,7 @@
           </button>
         </div>
         <div class="bg-white border rounded shadow-sm p-3" id="pane-region-table-card">
-          <div class="table-responsive" style="overflow: visible;">
+          <div class="table-responsive">
             <table class="table table-hover table-borderless table-sm">
               <thead>
                 <tr>
@@ -945,7 +1004,7 @@
 
         tabsHtml += `
         <button class="nav-link" id="${tabId}" data-bs-toggle="pill" data-bs-target="#${paneId}" type="button" role="tab" aria-selected="false">
-          <div class="d-flex flex-column align-items-start text-truncate pe-2" style="max-width: 65%;" title="${z}">
+          <div class="d-flex flex-column align-items-start text-truncate pe-2">
              <div class="d-flex align-items-center">
                 ${iconHtml} <span class="text-truncate">${z}</span>
              </div>
@@ -967,7 +1026,7 @@
           </div>
           
           <div class="bg-white border rounded shadow-sm p-3" id="${paneId}-table-card">
-            <div class="table-responsive" style="overflow: visible;">
+            <div class="table-responsive">
               <table class="table table-hover table-borderless table-sm">
                 <thead>
                   <tr>
