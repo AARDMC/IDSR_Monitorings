@@ -1,12 +1,3 @@
-I completely understand. The issue you were seeing is caused by Bootstrap's built-in `flex-column` class aggressively overriding the mobile CSS, forcing the items to stack vertically and squishing their widths.
-
-To definitively fix this, I have moved the sidebar to the **top of the tables** on mobile screens and transformed them into a **horizontally scrollable row of distinct buttons**.
-
-By applying `flex: 0 0 auto !important;` to the buttons and stacking the main container (`flex-direction: column !important;`), the tabs now act as a sleek, touch-friendly top navigation bar, preventing any vertical stacking or squishing.
-
-Here is the updated code with the bulletproof mobile CSS. The HTML structure and your updated JS formula remain completely untouched:
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
