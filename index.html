@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <base target="_top">
   
-  <!-- BROWSER TAB ICON (FAVICON) -->
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/AARDMC/IDSR_Monitorings/main/Logo%20File%20AA.png">
   <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/AARDMC/IDSR_Monitorings/main/Logo%20File%20AA.png">
   
@@ -13,7 +12,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   
-  <!-- EXTERNAL SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -98,7 +96,7 @@
     .analytics-row { display: flex; gap: 12px; height: 180px; }
     .chart-panel { flex: 1; background: var(--card-bg); border-radius: 12px; padding: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
     .chart-wrapper { flex: 1; position: relative; min-height: 0; width: 100%; overflow-x: auto; overflow-y: hidden; }
-    .chart-area { position: relative; height: 100%; width: 100%; }
+    .chart-area { position: relative; height: 100%; width: 100%; min-width: 600px; }
 
     /* REDESIGNED SPLIT PANEL FOR DATA */
     .data-panel { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; overflow: hidden; }
@@ -141,14 +139,14 @@
     }
 
     /* Right Side: Table Area */
-    .tab-content-area { flex: 1; padding: 20px; background: #f1f5f9; }
+    .tab-content-area { flex: 1; padding: 20px; background: #f1f5f9; overflow-x: auto; }
 
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-    .table { margin-bottom: 0; background: #ffffff; }
+    .table { margin-bottom: 0; background: #ffffff; width: 100%; min-width: 600px; }
     .table thead th { background: #f8fafc; font-size: 0.85rem; padding: 12px 10px; border-bottom: 2px solid #e2e8f0; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;}
     .table tbody td { font-size: 0.85rem; padding: 10px; vertical-align: middle; color: #1e293b; font-weight: 500;}
     .grand-total-row td { background-color: #f1f5f9 !important; font-weight: 800; border-top: 2px solid #94a3b8; color: #0f172a;}
@@ -206,7 +204,12 @@
     .loader-status i { font-size: 1.2rem; animation: blinker 1s infinite alternate; text-shadow: 0 0 8px rgba(52, 211, 153, 0.6); }
     @keyframes blinker { 0% { opacity: 0.3; } 100% { opacity: 1; filter: drop-shadow(0 0 6px #34d399); } }
 
-    /* SEAMLESS MOBILE OPTIMIZATIONS */
+    /* SEAMLESS MOBILE OPTIMIZATIONS (Updated for complete scaling) */
+    @media (max-width: 992px) {
+      .kpi-row { flex-wrap: wrap; height: auto; }
+      .kpi-card { flex: 1 1 calc(33.333% - 12px); min-width: 140px; }
+    }
+
     @media (max-width: 768px) {
       .top-header { 
         position: relative; height: auto; flex-direction: column; 
@@ -217,75 +220,63 @@
       .brand-title { font-size: 1.1rem; }
       
       .controls-wrapper { 
-        display: grid; 
-        grid-template-columns: 1fr 1fr; 
-        gap: 8px; 
-        width: 100%; 
+        display: flex; flex-direction: column; width: 100%; gap: 8px;
       }
-      #weekLabel { grid-column: 1 / -1; margin-bottom: 0px; text-align: center; display: block; width: 100%; }
-      .controls-wrapper select, .controls-wrapper button { width: 100% !important; font-size: 0.8rem; height: 38px; justify-content: center; }
+      .controls-wrapper > * { width: 100% !important; }
+      #weekLabel { text-align: center; display: block; margin-bottom: 4px; }
+      .controls-wrapper select, .controls-wrapper button { font-size: 0.85rem; height: 40px; justify-content: center; }
       
       .kpi-container { position: relative; top: auto; padding: 10px; }
-      .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; height: auto; }
+      .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
       .kpi-card { width: 100%; min-width: 0; padding: 12px 10px; flex: auto; }
       .kpi-card:last-child { grid-column: 1 / -1; } /* Alerts card spans full width */
       .kpi-label { font-size: 0.7rem; white-space: normal; line-height: 1.2; margin-bottom: 4px; }
       
       .main-workspace { padding: 10px; }
       
-      .analytics-row { height: 300px; margin-bottom: 10px; }
-      .chart-area { min-width: 650px; }
-      .chart-wrapper { -webkit-overflow-scrolling: touch; }
+      .analytics-row { height: 300px; margin-bottom: 10px; flex-direction: column; }
+      .chart-area { min-width: 600px; }
+      .chart-wrapper { -webkit-overflow-scrolling: touch; overflow-x: auto; }
       
-      .data-panel-header { flex-direction: column; gap: 10px; align-items: stretch !important; padding: 12px 10px; text-align: center; }
-      .data-panel-header > div { width: 100% !important; justify-content: center !important; }
+      .data-panel-header { flex-direction: column; gap: 10px; padding: 12px 10px; text-align: center; }
+      .data-panel-header .d-flex { width: 100% !important; justify-content: center !important; }
       
-      /* Important Mobile Override to fix Flex-box zero height bugs on iOS Safari */
       .data-panel-content { display: block; }
       
       /* Horizontal Scrollable Pills for Tabs */
       .side-tabs { 
-        display: flex;
-        width: 100%;
-        max-width: 100%; 
-        border-right: none; 
-        border-bottom: 2px solid var(--border-color); 
-        flex-direction: row !important; 
-        overflow-x: auto; 
-        flex-wrap: nowrap; 
-        padding: 10px 5px;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none; 
+        display: flex; width: 100%; max-width: 100%; 
+        border-right: none; border-bottom: 2px solid var(--border-color); 
+        flex-direction: row !important; overflow-x: auto; flex-wrap: nowrap; 
+        padding: 10px 5px; -webkit-overflow-scrolling: touch; scrollbar-width: none; 
       }
       .side-tabs::-webkit-scrollbar { display: none; }
       
       .side-tabs .nav-link {
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        margin: 0 4px;
-        padding: 8px 12px;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        min-width: 160px;
-        background: #ffffff;
+        border: 1px solid var(--border-color); border-radius: 8px; margin: 0 4px;
+        padding: 8px 12px; display: flex; flex-direction: column; align-items: flex-start;
+        min-width: 160px; background: #ffffff;
       }
-      .side-tabs .nav-link.active {
-        border-left: none;
-        border-bottom: none;
-      }
+      .side-tabs .nav-link.active { border-left: none; border-bottom: none; border: 2px solid var(--primary); }
       .side-tabs .nav-link .d-flex.align-items-center { width: 100%; max-width: 100% !important; margin-bottom: 8px; }
       .side-tabs .nav-link .ms-auto { margin-left: 0 !important; width: 100%; justify-content: flex-start; gap: 4px !important; }
       
       .tab-content-area { display: block; width: 100%; padding: 10px; min-height: 300px; }
-      .table-responsive { -webkit-overflow-scrolling: touch; border: 1px solid #e2e8f0; border-radius: 8px; }
+      .table-responsive { -webkit-overflow-scrolling: touch; border: 1px solid #e2e8f0; border-radius: 8px; overflow-x: auto;}
       
-      .popover { max-width: 280px; } /* Prevent popovers from overflowing mobile screen */
+      .popover { max-width: 280px; font-size: 0.85rem; }
       
-      /* Mobile Loader Adjustments */
       .loader-title { font-size: 1.3rem; }
       .loader-subtitle { font-size: 0.75rem; letter-spacing: 4px; }
       .loader-rings { width: 110px; height: 110px; }
+    }
+
+    @media (max-width: 480px) {
+      .kpi-row { grid-template-columns: 1fr; }
+      .kpi-card:last-child { grid-column: auto; }
+      .brand-title { font-size: 1rem; }
+      .brand-subtitle { font-size: 0.65rem; }
+      .modal-dialog { margin: 10px; max-width: calc(100% - 20px); }
     }
   </style>
 </head>
@@ -304,12 +295,10 @@
       <span id="weekLabel" class="text-muted fw-bold" style="font-size: 0.85rem;"></span>
       <select class="form-select text-primary" id="weekDropdown" onchange="selectWeek(this.value)"></select>
       
-      <!-- DROPDOWN FILTER -->
       <select class="form-select text-primary" id="subCityFilter" onchange="applyFilters()">
         <option value="ALL" selected>Region Overview (All Sub Cities)</option>
       </select>
       
-      <!-- RESET BUTTON -->
       <button class="btn btn-light text-secondary border fw-bold shadow-sm d-flex align-items-center" type="button" onclick="resetDashboard()" title="Reset Filters & Search">
         <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
       </button>
@@ -361,7 +350,6 @@
       <div class="data-panel-header d-flex justify-content-between align-items-center">
         <span class="d-none d-md-block"><i class="bi bi-layout-sidebar-inset me-2 text-primary"></i> Sub City & Hospital Breakdown</span>
         
-        <!-- Live Deep Facility Search Bar -->
         <div class="d-flex align-items-center gap-3 w-50 justify-content-end">
            <div class="input-group input-group-sm w-100 shadow-sm border rounded bg-white">
               <span class="input-group-text bg-transparent border-0 text-muted"><i class="bi bi-search"></i></span>
@@ -370,19 +358,14 @@
         </div>
       </div>
       
-      <!-- Normal View -->
       <div class="data-panel-content p-0" id="mainDataContainer">
-         <!-- Tabs and Tables injected via JS -->
-      </div>
+         </div>
       
-      <!-- Global Search Results View (Hidden by Default) -->
       <div class="tab-content-area w-100" id="searchResultsContainer" style="display: none; background: #ffffff;">
-         <!-- Search Results Injected Here -->
-      </div>
+         </div>
     </div>
   </main>
 
-  <!-- AMAZING OVERLAY LOADER -->
   <div class="loader-overlay" id="loader">
     <div class="loader-glow-1"></div>
     <div class="loader-glow-2"></div>
@@ -402,7 +385,6 @@
     </div>
   </div>
 
-  <!-- EXPORT MODAL -->
   <div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
@@ -436,7 +418,6 @@
             </div>
           </div>
 
-          <!-- PROGRESS BAR CONTAINER (Hidden by default) -->
           <div id="exportProgressContainer" style="display: none;" class="mt-4">
              <div class="d-flex justify-content-between mb-1" style="font-size:0.85rem;">
                  <span class="fw-bold text-primary"><i class="bi bi-arrow-repeat spin"></i> Compiling Data...</span>
@@ -524,8 +505,17 @@
       exportModalInstance = new bootstrap.Modal(document.getElementById('exportModal'));
       errorModalInstance = new bootstrap.Modal(document.getElementById('errorModal'));
       
+      // Load Calculated Target Dates Instantly for Speed UI Fill
+      const targetEpi = getEpiWeekDetails();
+      activeWeekNumber = targetEpi.weekNum;
+      activeEpiWeekStr = "Week " + activeWeekNumber;
+      
       populateWeekDropdownWithDefault();
       
+      document.getElementById('weekLabel').innerHTML = `<i class="bi bi-calendar-event me-1"></i> ${targetEpi.month} ${targetEpi.year}`;
+      document.getElementById('weekDropdown').value = activeWeekNumber;
+      
+      // Fetch Sub Cities
       google.script.run
         .withSuccessHandler(function(codes) {
            let select = document.getElementById('subCityFilter');
@@ -533,7 +523,7 @@
            let seenNames = new Set();
            for (let code in codes) {
                let name = codes[code];
-               if (name === "REGION") continue; // Skip to prevent double region
+               if (name === "REGION") continue; 
                if (!seenNames.has(name.toLowerCase())) {
                    seenNames.add(name.toLowerCase());
                    html += `<option value="${code}">${name}</option>`;
@@ -543,21 +533,8 @@
         })
         .getSubCities();
         
-      google.script.run
-        .withSuccessHandler(function(weekInfo) {
-          activeWeekNumber = weekInfo.weekNum;
-          activeEpiWeekStr = "Week " + weekInfo.weekNum;
-          document.getElementById('weekLabel').innerHTML = `<i class="bi bi-calendar-event me-1"></i> ${weekInfo.month} ${weekInfo.year}`;
-          document.getElementById('weekDropdown').value = weekInfo.weekNum;
-          fetchData();
-        })
-        .withFailureHandler(function(err) {
-          activeWeekNumber = calculateEpiWeekFallback();
-          activeEpiWeekStr = "Week " + activeWeekNumber;
-          document.getElementById('weekDropdown').value = activeWeekNumber;
-          fetchData();
-        })
-        .getCurrentEpiWeekInfo();
+      // Fetch Initial Data utilizing our locally computed target week
+      fetchData();
         
       // Ensure smooth scroll to table view on mobile when a tab is clicked
       document.addEventListener('shown.bs.tab', function (event) {
@@ -577,26 +554,50 @@
       errorModalInstance.show();
     }
 
-    function calculateEpiWeekFallback() {
+    // ACCURATE FORMULA TRANSLATION TO JAVASCRIPT
+    function getEpiWeekDetails() {
       const today = new Date();
-      const dayOfWeek = today.getDay();
-      let daysToLastSaturday = dayOfWeek === 0 ? -1 : -(dayOfWeek);
-      const lastSaturday = new Date(today);
-      lastSaturday.setDate(today.getDate() + daysToLastSaturday);
-      const yearStart = new Date(lastSaturday.getFullYear(), 0, 1);
-      const dayOfYear = Math.floor((lastSaturday - yearStart) / (1000 * 60 * 60 * 24));
-      return Math.max(1, Math.min(52, Math.floor((dayOfYear + 10) / 7)));
+      // JS getDay(): Sunday = 0, Monday = 1 ... Saturday = 6
+      const jsDay = today.getDay();
+      
+      // Weekday where Monday = 1 ... Sunday = 7
+      const weekday2 = jsDay === 0 ? 7 : jsDay;
+
+      // Base Date: TODAY() - WEEKDAY(TODAY(),2)
+      const baseDate = new Date(today);
+      baseDate.setDate(today.getDate() - weekday2);
+
+      // Target Date for Year & Month: TODAY() - WEEKDAY(TODAY(),2) - 3
+      const targetDate = new Date(baseDate);
+      targetDate.setDate(baseDate.getDate() - 3);
+
+      const year = targetDate.getFullYear();
+      const month = targetDate.toLocaleString('default', { month: 'long' });
+
+      // Calculation for Epi Week logic
+      const currentYearJan1 = new Date(today.getFullYear(), 0, 1);
+      
+      // Difference in days between Base Date and Jan 1st of Current Year
+      const diffTime = baseDate.getTime() - currentYearJan1.getTime();
+      const diffDays = Math.floor(diffTime / (1000 * 3600 * 24));
+      
+      // INT((diffDays + 10) / 7)
+      const epiWeek = Math.floor((diffDays + 10) / 7);
+
+      return {
+        year: year,
+        month: month,
+        weekNum: Math.max(1, Math.min(52, epiWeek))
+      };
     }
 
     function populateWeekDropdownWithDefault() {
-      const fallbackWeek = calculateEpiWeekFallback();
       let dropdown = document.getElementById('weekDropdown');
       let html = '';
       for (let i = 1; i <= 52; i++) {
          html += `<option value="${i}">Epi Week ${i}</option>`;
       }
       dropdown.innerHTML = html;
-      dropdown.value = fallbackWeek;
     }
 
     function showLoader(msg) {
