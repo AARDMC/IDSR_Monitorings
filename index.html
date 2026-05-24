@@ -204,7 +204,7 @@
     .loader-status i { font-size: 1.2rem; animation: blinker 1s infinite alternate; text-shadow: 0 0 8px rgba(52, 211, 153, 0.6); }
     @keyframes blinker { 0% { opacity: 0.3; } 100% { opacity: 1; filter: drop-shadow(0 0 6px #34d399); } }
 
-    /* SEAMLESS MOBILE OPTIMIZATIONS (Updated for complete scaling) */
+    /* SEAMLESS MOBILE OPTIMIZATIONS */
     @media (max-width: 992px) {
       .kpi-row { flex-wrap: wrap; height: auto; }
       .kpi-card { flex: 1 1 calc(33.333% - 12px); min-width: 140px; }
@@ -243,24 +243,51 @@
       
       .data-panel-content { display: block; }
       
-      /* Horizontal Scrollable Pills for Tabs */
+      /* --- FIXED SIDE-TABS FOR MOBILE (NO MORE COLUMN CHARTS) --- */
       .side-tabs { 
         display: flex; width: 100%; max-width: 100%; 
-        border-right: none; border-bottom: 2px solid var(--border-color); 
+        border-right: none; border-bottom: 1px solid var(--border-color); 
         flex-direction: row !important; overflow-x: auto; flex-wrap: nowrap; 
-        padding: 10px 5px; -webkit-overflow-scrolling: touch; scrollbar-width: none; 
+        padding: 12px 10px; -webkit-overflow-scrolling: touch; scrollbar-width: none; 
+        gap: 10px; 
       }
       .side-tabs::-webkit-scrollbar { display: none; }
       
       .side-tabs .nav-link {
-        border: 1px solid var(--border-color); border-radius: 8px; margin: 0 4px;
-        padding: 8px 12px; display: flex; flex-direction: column; align-items: flex-start;
-        min-width: 160px; background: #ffffff;
+        border: 1px solid #cbd5e1 !important; 
+        border-radius: 50px !important; /* Forces a perfect pill shape */
+        margin: 0; 
+        padding: 8px 18px !important; 
+        display: flex; 
+        flex-direction: row !important; /* Forces side-by-side layout */
+        align-items: center !important;
+        min-width: max-content; 
+        background: #ffffff;
       }
-      .side-tabs .nav-link.active { border-left: none; border-bottom: none; border: 2px solid var(--primary); }
-      .side-tabs .nav-link .d-flex.align-items-center { width: 100%; max-width: 100% !important; margin-bottom: 8px; }
-      .side-tabs .nav-link .ms-auto { margin-left: 0 !important; width: 100%; justify-content: flex-start; gap: 4px !important; }
       
+      .side-tabs .nav-link.active {
+        border-color: #2563eb !important;
+        background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+        color: white !important;
+      }
+
+      /* Force contents inside the tabs into a single flat line */
+      .side-tabs .nav-link .flex-column {
+        flex-direction: row !important;
+        align-items: center !important;
+      }
+      
+      .side-tabs .nav-link .pulse-text {
+        display: none !important; /* Hide touch cue to keep pills beautifully compact */
+      }
+
+      .side-tabs .nav-link .ms-auto { 
+        margin-left: 15px !important; 
+        width: auto !important; 
+        justify-content: flex-end; 
+      }
+      /* ----------------------------------------------------------- */
+
       .tab-content-area { display: block; width: 100%; padding: 10px; min-height: 300px; }
       .table-responsive { -webkit-overflow-scrolling: touch; border: 1px solid #e2e8f0; border-radius: 8px; overflow-x: auto;}
       
