@@ -1158,10 +1158,10 @@
                  <select class="form-select form-select-sm" id="mdFacilityFilter" onchange="renderMiniDashCharts()"><option value="ALL">All Facilities</option></select>
              </div>
          </div>
-
-         <div id="mdLoadingState" class="text-center py-5">
-            <div class="spinner-border text-primary" role="status"></div>
-            <p class="text-muted mt-2 fw-bold">Fetching Historical Data. Please wait...</p>
+        <div id="mdLoadingState" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+            <p class="text-primary mt-3 fw-bold fs-5" id="mdLoadingText">Initializing Data Sync...</p>
+            <p class="text-muted small">Bypassing export limits by chunking historical data...</p>
          </div>
          
          <div class="bg-white border rounded shadow-sm p-4 mb-3" id="mini-dash-export-area" style="display: none;">
