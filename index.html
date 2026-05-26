@@ -1113,8 +1113,7 @@
           </tr></tbody></table></div></div></div>`;
       }
       
-      // --- NEW MINI DASHBOARD CODE START ---
-      // Append the Mini Dashboard Button to the bottom of the sidebar list
+     // --- NEW MINI DASHBOARD CODE START ---
       tabsHtml += `
       <button class="nav-link mt-2 border-top shadow-sm" style="border-top-color: var(--primary) !important; border-top-width: 3px !important;" id="tab-btn-mini-dash" data-bs-toggle="pill" data-bs-target="#tab-pane-mini-dash" type="button" role="tab" aria-selected="false" onclick="initMiniDashboardCharts()">
         <div class="d-flex align-items-center text-truncate pe-2">
@@ -1123,7 +1122,6 @@
         </div>
       </button>`;
       
-      // Add the content pane for the Mini Dashboard
       contentHtml += `
       <div class="tab-pane fade" id="tab-pane-mini-dash" role="tabpanel" aria-labelledby="tab-btn-mini-dash">
          <div class="d-flex justify-content-between align-items-center mb-3">
@@ -1133,50 +1131,40 @@
            </button>
          </div>
          
-         <div class="row g-2 mb-3 bg-white p-3 rounded border shadow-sm align-items-end">
+         <div class="row g-2 mb-3 bg-white p-3 rounded border shadow-sm align-items-end" id="mdFiltersContainer" style="display: none;">
              <div class="col-md-2 col-sm-6">
                  <label class="form-label fw-bold text-secondary mb-1" style="font-size: 0.75rem;">Disease Name</label>
-                 <select class="form-select form-select-sm" id="mdDiseaseFilter" onchange="updateMiniDashboard()">
-                     <option value="All" selected>Top 10 Overview</option>
-                     <option value="Malaria">Malaria</option>
-                     <option value="Meningitis">Meningitis</option>
-                     <option value="Dysentery">Dysentery</option>
-                     <option value="Scabies">Scabies</option>
-                     <option value="Measles">Measles</option>
-                     <option value="Cholera">Cholera</option>
-                     <option value="COVID-19">COVID-19</option>
-                     <option value="SAM (U5)">SAM (U5)</option>
-                     </select>
+                 <select class="form-select form-select-sm" id="mdDiseaseFilter" onchange="renderMiniDashCharts()"></select>
              </div>
              <div class="col-md-2 col-sm-6">
                  <label class="form-label fw-bold text-secondary mb-1" style="font-size: 0.75rem;">Type of Case</label>
-                 <select class="form-select form-select-sm" id="mdTypeFilter" onchange="updateMiniDashboard()">
-                     <option value="Total">Total Cases</option>
-                     <option value="Inpatient">Inpatient</option>
-                     <option value="Outpatient">Outpatient</option>
-                     <option value="Death">Death</option>
+                 <select class="form-select form-select-sm" id="mdTypeFilter" onchange="renderMiniDashCharts()">
+                     <option value="total">Total Cases</option>
+                     <option value="inp">Inpatient</option>
+                     <option value="outp">Outpatient</option>
+                     <option value="death">Death</option>
                  </select>
              </div>
              <div class="col-md-2 col-sm-6">
                  <label class="form-label fw-bold text-secondary mb-1" style="font-size: 0.75rem;">Zone/Sub City</label>
-                 <select class="form-select form-select-sm" id="mdZoneFilter" onchange="updateMiniDashboard()">
-                     <option value="ALL">All Regions</option>
-                 </select>
+                 <select class="form-select form-select-sm" id="mdZoneFilter" onchange="mdZoneChanged()"><option value="ALL">All Regions</option></select>
              </div>
-             <div class="col-md-2 col-sm-6">
+             <div class="col-md-3 col-sm-6">
+                 <label class="form-label fw-bold text-secondary mb-1" style="font-size: 0.75rem;">Woreda</label>
+                 <select class="form-select form-select-sm" id="mdWoredaFilter" onchange="mdWoredaChanged()"><option value="ALL">All Woredas</option></select>
+             </div>
+             <div class="col-md-3 col-sm-6">
                  <label class="form-label fw-bold text-secondary mb-1" style="font-size: 0.75rem;">Health Facility</label>
-                 <select class="form-select form-select-sm" id="mdFacilityFilter" onchange="updateMiniDashboard()">
-                     <option value="ALL">All Facilities</option>
-                 </select>
-             </div>
-             <div class="col-md-4 col-sm-12 text-end">
-                 <small class="text-muted fst-italic d-block mt-2">
-                     *Note: Disease trending relies on full historical dataset fetching from backend API.
-                 </small>
+                 <select class="form-select form-select-sm" id="mdFacilityFilter" onchange="renderMiniDashCharts()"><option value="ALL">All Facilities</option></select>
              </div>
          </div>
+
+         <div id="mdLoadingState" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-2 fw-bold">Fetching Historical Data. Please wait...</p>
+         </div>
          
-         <div class="bg-white border rounded shadow-sm p-4 mb-3" id="mini-dash-export-area">
+         <div class="bg-white border rounded shadow-sm p-4 mb-3" id="mini-dash-export-area" style="display: none;">
            <h6 class="fw-bold text-center mb-3" id="trendChartTitle" style="color: #475569;">Disease Trend Across Epi Weeks</h6>
            <div style="height: 250px; width: 100%; margin-bottom: 30px;">
              <canvas id="trendLineChart"></canvas>
