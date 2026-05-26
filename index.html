@@ -1113,6 +1113,83 @@
           </tr></tbody></table></div></div></div>`;
       }
       
+      // --- NEW MINI DASHBOARD CODE START ---
+      // Append the Mini Dashboard Button to the bottom of the sidebar list
+      tabsHtml += `
+      <button class="nav-link mt-2 border-top shadow-sm" style="border-top-color: var(--primary) !important; border-top-width: 3px !important;" id="tab-btn-mini-dash" data-bs-toggle="pill" data-bs-target="#tab-pane-mini-dash" type="button" role="tab" aria-selected="false" onclick="initMiniDashboardCharts()">
+        <div class="d-flex align-items-center text-truncate pe-2">
+           <i class="bi bi-graph-up-arrow text-success me-2" style="font-size: 1.2rem;"></i> 
+           <span class="text-truncate fw-bold" style="color: var(--text-main);">Mini Dashboard</span>
+        </div>
+      </button>`;
+      
+      // Add the content pane for the Mini Dashboard
+      contentHtml += `
+      <div class="tab-pane fade" id="tab-pane-mini-dash" role="tabpanel" aria-labelledby="tab-btn-mini-dash">
+         <div class="d-flex justify-content-between align-items-center mb-3">
+           <h5 class="m-0 fw-bold text-slate-800"><i class="bi bi-bar-chart-line-fill me-2 text-primary"></i>Disease Analytics Overview</h5>
+           <button class="btn btn-outline-success btn-sm fw-bold shadow-sm d-flex align-items-center" onclick="downloadMiniDashboardImage()">
+             <i class="bi bi-camera me-2"></i> Export PNG
+           </button>
+         </div>
+         
+         <div class="row g-2 mb-3 bg-white p-3 rounded border shadow-sm align-items-end">
+             <div class="col-md-2 col-sm-6">
+                 <label class="form-label fw-bold text-secondary mb-1" style="font-size: 0.75rem;">Disease Name</label>
+                 <select class="form-select form-select-sm" id="mdDiseaseFilter" onchange="updateMiniDashboard()">
+                     <option value="All" selected>Top 10 Overview</option>
+                     <option value="Malaria">Malaria</option>
+                     <option value="Meningitis">Meningitis</option>
+                     <option value="Dysentery">Dysentery</option>
+                     <option value="Scabies">Scabies</option>
+                     <option value="Measles">Measles</option>
+                     <option value="Cholera">Cholera</option>
+                     <option value="COVID-19">COVID-19</option>
+                     <option value="SAM (U5)">SAM (U5)</option>
+                     </select>
+             </div>
+             <div class="col-md-2 col-sm-6">
+                 <label class="form-label fw-bold text-secondary mb-1" style="font-size: 0.75rem;">Type of Case</label>
+                 <select class="form-select form-select-sm" id="mdTypeFilter" onchange="updateMiniDashboard()">
+                     <option value="Total">Total Cases</option>
+                     <option value="Inpatient">Inpatient</option>
+                     <option value="Outpatient">Outpatient</option>
+                     <option value="Death">Death</option>
+                 </select>
+             </div>
+             <div class="col-md-2 col-sm-6">
+                 <label class="form-label fw-bold text-secondary mb-1" style="font-size: 0.75rem;">Zone/Sub City</label>
+                 <select class="form-select form-select-sm" id="mdZoneFilter" onchange="updateMiniDashboard()">
+                     <option value="ALL">All Regions</option>
+                 </select>
+             </div>
+             <div class="col-md-2 col-sm-6">
+                 <label class="form-label fw-bold text-secondary mb-1" style="font-size: 0.75rem;">Health Facility</label>
+                 <select class="form-select form-select-sm" id="mdFacilityFilter" onchange="updateMiniDashboard()">
+                     <option value="ALL">All Facilities</option>
+                 </select>
+             </div>
+             <div class="col-md-4 col-sm-12 text-end">
+                 <small class="text-muted fst-italic d-block mt-2">
+                     *Note: Disease trending relies on full historical dataset fetching from backend API.
+                 </small>
+             </div>
+         </div>
+         
+         <div class="bg-white border rounded shadow-sm p-4 mb-3" id="mini-dash-export-area">
+           <h6 class="fw-bold text-center mb-3" id="trendChartTitle" style="color: #475569;">Disease Trend Across Epi Weeks</h6>
+           <div style="height: 250px; width: 100%; margin-bottom: 30px;">
+             <canvas id="trendLineChart"></canvas>
+           </div>
+           <hr style="border-color: var(--border-color); margin: 30px 0;"/>
+           <h6 class="fw-bold text-center mb-3" id="top10ChartTitle" style="color: #475569;">Top 10 Reported Diseases for Selected Week</h6>
+           <div style="height: 300px; width: 100%;">
+             <canvas id="top10ColumnChart"></canvas>
+           </div>
+         </div>
+      </div>`;
+      // --- NEW MINI DASHBOARD CODE END ---
+
       tabsHtml += '</div>';
       contentHtml += '</div>';
       
@@ -1329,6 +1406,107 @@
       } catch(e) { 
         showErrorPopup("Download Error", "Could not generate the CSV file on your device.");
       }
+    }
+
+    // =========================================================
+    // MINI DASHBOARD LOGIC (ADDED LAYER)
+    // =========================================================
+    let mdTrendChartInstance = null;
+    let mdTop10ChartInstance = null;
+
+    function initMiniDashboardCharts() {
+        // Prevent re-initialization if already drawn
+        if(mdTrendChartInstance && mdTop10ChartInstance) return;
+        
+        // Setup mock/placeholder data until backend API (google.script.run) handles full cross-week disease query
+        let dummyTrendLabels = [];
+        for(let i=1; i<=activeWeekNumber; i++) dummyTrendLabels.push("W"+i);
+        let dummyTrendData = dummyTrendLabels.map(() => Math.floor(Math.random() * 50) + 10);
+        
+        const ctxTrend = document.getElementById('trendLineChart').getContext('2d');
+        mdTrendChartInstance = new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: dummyTrendLabels,
+                datasets: [{
+                    label: 'Selected Disease Trend',
+                    data: dummyTrendData,
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#2563eb',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                  y: { beginAtZero: true, grid: { borderDash: [4, 4] } },
+                  x: { grid: { display: false } }
+                }
+            }
+        });
+
+        // Top 10 Chart Setup (Bar Chart)
+        let top10Labels = ["Malaria", "Dysentery", "Scabies", "Meningitis", "SAM (U5)", "Measles", "Typhoid", "Cholera", "COVID-19", "Rabies"];
+        let top10Data = [340, 210, 195, 140, 95, 80, 65, 40, 12, 5];
+        
+        const ctxTop10 = document.getElementById('top10ColumnChart').getContext('2d');
+        mdTop10ChartInstance = new Chart(ctxTop10, {
+            type: 'bar',
+            data: {
+                labels: top10Labels,
+                datasets: [{
+                    label: 'Cases',
+                    data: top10Data,
+                    backgroundColor: '#10b981',
+                    borderRadius: 4,
+                    datalabels: {
+                        color: '#1e293b',
+                        anchor: 'end', align: 'top', offset: 2,
+                        font: { weight: 'bold' }
+                    }
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                  y: { beginAtZero: true, grid: { borderDash: [4, 4] }, grace: '10%' },
+                  x: { grid: { display: false }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 } }
+                }
+            }
+        });
+    }
+
+    function updateMiniDashboard() {
+        // Function to act as trigger point when User changes Dropdowns
+        // Here you would eventually call your new GAS function: 
+        // google.script.run.getDiseaseAnalyticsData(disease, type, zone, facility)
+        let disease = document.getElementById('mdDiseaseFilter').value;
+        document.getElementById('trendChartTitle').innerText = disease === "All" ? "Overall Disease Trend Across Epi Weeks" : `${disease} Trend Across Epi Weeks`;
+    }
+
+    function downloadMiniDashboardImage() {
+        let container = document.getElementById('mini-dash-export-area');
+        let originalBorder = container.style.border;
+        let originalBoxShadow = container.style.boxShadow;
+        
+        container.style.border = 'none';
+        container.style.boxShadow = 'none';
+        
+        html2canvas(container, { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
+            container.style.border = originalBorder;
+            container.style.boxShadow = originalBoxShadow;
+            
+            let link = document.createElement('a');
+            link.download = `MiniDashboard_Analytics_${activeEpiWeekStr.replace(/\s+/g, '')}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        });
     }
   </script>
 </body>
