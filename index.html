@@ -739,6 +739,22 @@
         let originalBorder = container.style.border;
         let originalBoxShadow = container.style.boxShadow;
         
+        // --- NEW MAGIC: Temporarily expand scrollable tables so nothing is cut off ---
+        let responsiveDivs = container.querySelectorAll('.table-responsive');
+        let originalStyles = [];
+        responsiveDivs.forEach(div => {
+            originalStyles.push({
+                overflow: div.style.overflow,
+                overflowX: div.style.overflowX,
+                width: div.style.width
+            });
+            // Force the box to show everything at once
+            div.style.overflow = 'visible';
+            div.style.overflowX = 'visible';
+            div.style.width = 'max-content';
+        });
+        
+        // Setup Temporary Header Title for Image
         let tempTitle = document.createElement('div');
         tempTitle.style.textAlign = 'center';
         tempTitle.style.padding = '15px';
@@ -747,6 +763,7 @@
         tempTitle.style.borderBottom = '3px solid #e2e8f0';
         tempTitle.style.borderRadius = '8px 8px 0 0';
         
+        // Create formatted name for header
         let displayName = zName === "Overview" ? "Addis Ababa Region" : zName;
         tempTitle.innerHTML = `<h3 style="margin:0; color:#0f172a; font-weight:800; font-family:'Inter', sans-serif;">${displayName} Report Completeness and Timeliness at ${activeEpiWeekStr}</h3>`;
         
@@ -754,18 +771,34 @@
         container.style.border = 'none';
         container.style.boxShadow = 'none';
         
-        html2canvas(container, { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
+        // Take the picture using the expanded dimensions
+        html2canvas(container, { 
+            backgroundColor: "#ffffff", 
+            scale: 2,
+            width: container.scrollWidth,
+            height: container.scrollHeight,
+            windowWidth: container.scrollWidth,
+            windowHeight: container.scrollHeight
+        }).then(canvas => {
+            // Restore Original State
             container.removeChild(tempTitle);
             container.style.border = originalBorder;
             container.style.boxShadow = originalBoxShadow;
             
+            // Put the scrollbars back for the user interface
+            responsiveDivs.forEach((div, index) => {
+                div.style.overflow = originalStyles[index].overflow;
+                div.style.overflowX = originalStyles[index].overflowX;
+                div.style.width = originalStyles[index].width;
+            });
+            
+            // Download the un-clipped image
             let link = document.createElement('a');
             link.download = `${displayName.replace(/\s+/g, '_')}_${activeEpiWeekStr.replace(/\s+/g, '')}.png`;
             link.href = canvas.toDataURL("image/png");
             link.click();
         });
     }
-
     function initPopovers() {
       setTimeout(() => {
         let popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
