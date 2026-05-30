@@ -1160,12 +1160,14 @@ function renderCBESTable() {
         let selectedValue = select.value;
         let displayData = allCBESData;
 
+        // Apply drop-down filter if one is active
         if (selectedValue && selectedValue !== "ALL") {
             let selectedText = select.options[select.selectedIndex].text.toLowerCase();
             let cleanSearchText = selectedText.replace("sub city", "").replace("phem", "").replace("addis ababa", "").trim();
             displayData = allCBESData.filter(row => row.Zone && row.Zone.toLowerCase().includes(cleanSearchText));
         }
 
+        // Handle Empty State
         if (!displayData || displayData.length === 0) {
             container.innerHTML = `<div class="text-center py-4 text-muted">No operational Health Centers mapped for this period or filter.</div>`;
             return;
@@ -1174,6 +1176,7 @@ function renderCBESTable() {
         let grouped = {};
         let totalExp = 0, totalRep = 0, totalTime = 0;
 
+        // Group data by Sub City (Zone)
         displayData.forEach(row => {
             let z = row.Zone || 'Unknown';
             if(!grouped[z]) grouped[z] = { rows: [], exp: 0, rep: 0, timely: 0 };
@@ -1200,9 +1203,11 @@ function renderCBESTable() {
             totalTime += timelyCount;
         });
 
+        // Global Scores
         let gC = totalExp > 0 ? (totalRep / totalExp) * 100 : 0;
         let gT = totalExp > 0 ? (totalTime / totalExp) * 100 : 0;
 
+        // Build the Grand Total Header
         let html = `
         <div class="alert alert-light border shadow-sm mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div><h6 class="m-0 fw-bold text-slate-800">Grand Total (CBES)</h6></div>
@@ -1218,6 +1223,7 @@ function renderCBESTable() {
         let zIndex = 0;
         let sortedZones = Object.keys(grouped).sort((a,b) => a.localeCompare(b));
         
+        // Loop through each Sub City to build the Accordions
         sortedZones.forEach(z => {
             zIndex++;
             let zData = grouped[z];
@@ -1226,6 +1232,7 @@ function renderCBESTable() {
 
             html += `
             <div class="accordion-item border mb-2 shadow-sm" style="border-radius: 8px; overflow: hidden;">
+                
                 <h2 class="accordion-header" id="headingCBES${zIndex}">
                     <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCBES${zIndex}" aria-expanded="false" aria-controls="collapseCBES${zIndex}">
                         <div class="w-100 d-flex justify-content-between align-items-center pe-3">
@@ -1239,21 +1246,31 @@ function renderCBESTable() {
                         </div>
                     </button>
                 </h2>
+
                 <div id="collapseCBES${zIndex}" class="accordion-collapse collapse" aria-labelledby="headingCBES${zIndex}" data-bs-parent="#cbesAccordion">
                     <div class="accordion-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover table-borderless table-sm m-0">
-                                <thead style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-                                    <tr>
-                                        <th class="ps-3">Woreda</th>
-                                        <th class="text-center">Expected HC</th>
-                                        <th class="text-center">Reported HC</th>
-                                        <th class="text-center">Completeness</th>
-                                        <th class="text-center">Timeliness</th>
-                                    </tr>
-                                </thead>
-                                <tbody>`;
+                        
+                        <div class="d-flex justify-content-end p-2 bg-white border-bottom">
+                            <button class="btn btn-outline-warning btn-sm fw-bold shadow-sm d-flex align-items-center" onclick="downloadTableImage('cbes-export-wrap-${zIndex}', '${z}_CBES')">
+                                <i class="bi bi-camera me-2"></i> Export Table
+                            </button>
+                        </div>
+                        
+                        <div id="cbes-export-wrap-${zIndex}" class="bg-white p-2">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-borderless table-sm m-0">
+                                    <thead style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                                        <tr>
+                                            <th class="ps-3">Woreda</th>
+                                            <th class="text-center">Expected HC</th>
+                                            <th class="text-center">Reported HC</th>
+                                            <th class="text-center">Completeness</th>
+                                            <th class="text-center">Timeliness</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
             
+            // Populate the Woreda Rows
             zData.rows.sort((a,b) => a.Woreda.localeCompare(b.Woreda)).forEach(row => {
                 let exp = row.Expected || 0;
                 let rep = row.Reported || 0;
@@ -1277,38 +1294,38 @@ function renderCBESTable() {
                 }
 
                 html += `
-                                    <tr>
-                                        <td class="fw-bold text-main ps-3">${row.Woreda}</td>
-                                        <td class="text-center fw-semibold">${exp}</td>
-                                        <td class="text-center fw-semibold">${displayReported}</td>
-                                        <td class="text-center"><span class="badge ${getBadgeClass(c)}">${Math.min(100, c).toFixed(1)}%</span></td>
-                                        <td class="text-center"><span class="badge ${getBadgeClass(t)}">${Math.min(100, t).toFixed(1)}%</span></td>
-                                    </tr>`;
+                                        <tr>
+                                            <td class="fw-bold text-main ps-3">${row.Woreda}</td>
+                                            <td class="text-center fw-semibold">${exp}</td>
+                                            <td class="text-center fw-semibold">${displayReported}</td>
+                                            <td class="text-center"><span class="badge ${getBadgeClass(c)}">${Math.min(100, c).toFixed(1)}%</span></td>
+                                            <td class="text-center"><span class="badge ${getBadgeClass(t)}">${Math.min(100, t).toFixed(1)}%</span></td>
+                                        </tr>`;
             });
 
+            // Sub City Total Footer
             html += `
-                                </tbody>
-                                <tfoot class="grand-total-row">
-                                    <tr>
-                                        <td class="text-end text-uppercase pe-3">Zone Total</td>
-                                        <td class="text-center">${zData.exp}</td>
-                                        <td class="text-center">${zData.rep}</td>
-                                        <td class="text-center"><span class="badge ${getBadgeClass(zC)}">${zC.toFixed(1)}%</span></td>
-                                        <td class="text-center"><span class="badge ${getBadgeClass(zT)}">${zT.toFixed(1)}%</span></td>
-                                    </tr>
-                                </tfoot>
-                            </table>
+                                    </tbody>
+                                    <tfoot class="grand-total-row">
+                                        <tr>
+                                            <td class="text-end text-uppercase pe-3">Sub City Total</td>
+                                            <td class="text-center">${zData.exp}</td>
+                                            <td class="text-center">${zData.rep}</td>
+                                            <td class="text-center"><span class="badge ${getBadgeClass(zC)}">${zC.toFixed(1)}%</span></td>
+                                            <td class="text-center"><span class="badge ${getBadgeClass(zT)}">${zT.toFixed(1)}%</span></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>`;
+                </div>`;
         });
 
-        html += `</div>`; // Close Accordion
+        html += `</div>`; // Close Accordion Group
         container.innerHTML = html;
-        initPopovers(); // Re-bind tooltips after HTML injection
+        initPopovers(); // Re-bind hover tooltips 
     }
-
     function renderAnalyticsCharts(zoneStats, globalKpi) {
       let labels = [], compData = [], timeData = [];
       let compColors = [], timeColors = [];
