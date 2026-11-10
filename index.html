@@ -177,20 +177,41 @@
     .loader-glow-2 { width: 300px; height: 300px; background: #10b981; opacity: 0.25; bottom: 15%; right: 15%; animation: floatGlow 8s ease-in-out infinite alternate-reverse; }
     @keyframes floatGlow { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(40px, 40px) scale(1.1); } }
 
-    /* Kinetic Rings */
-    .loader-rings { position: relative; width: 140px; height: 140px; display: flex; justify-content: center; align-items: center; margin-bottom: 35px; }
-    .ring { position: absolute; border-radius: 50%; border: 3px solid transparent; }
-    .ring-1 { width: 100%; height: 100%; border-top-color: #3b82f6; border-left-color: #3b82f6; animation: spinRing 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; }
-    .ring-2 { width: 75%; height: 75%; border-bottom-color: #10b981; border-right-color: #10b981; animation: spinRing 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite reverse; }
-    .ring-3 { width: 50%; height: 50%; border-top-color: #f59e0b; animation: spinRing 1s linear infinite; }
-    .loader-core { width: 22%; height: 22%; background: #ffffff; border-radius: 50%; box-shadow: 0 0 15px #ffffff, 0 0 35px #3b82f6; animation: pulseCore 1.5s ease-in-out infinite alternate; }
-    
-    @keyframes spinRing { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes pulseCore { 0% { transform: scale(0.9); box-shadow: 0 0 10px #ffffff, 0 0 20px #3b82f6; } 100% { transform: scale(1.3); box-shadow: 0 0 25px #ffffff, 0 0 50px #3b82f6; } }
+    /* SURVEILLANCE NETWORK STAGE - health facilities reporting into the central hub */
+    .loader-stage {
+      position: relative; width: 320px; max-width: 84vw; aspect-ratio: 8 / 5; flex-shrink: 0;
+      display: flex; justify-content: center; align-items: center; margin-bottom: 22px;
+    }
+    .loader-viz { position: absolute; inset: 0; width: 100%; height: 100%; }
 
-    /* BRAND LOGO - Heart of the kinetic rings */
+    /* Real-time vital-sign trace gliding behind the brand */
+    .viz-ecg { stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 30 70; filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.5)); }
+
+    /* Data links: reporting facilities -> central hub */
+    .viz-spoke { stroke: #60a5fa; stroke-width: 1.2; opacity: 0.45; stroke-dasharray: 3 7; animation: spokeFlow 1.5s linear infinite; }
+    @keyframes spokeFlow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -10; } }
+
+    /* Reporting facility nodes (transmitting health facilities) */
+    .viz-node-halo { fill: none; stroke: #10b981; stroke-width: 1; opacity: 0.4; }
+    .viz-node-dot { fill: #34d399; animation: nodeBreathe 2.8s ease-in-out infinite; }
+    @keyframes nodeBreathe { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+    .viz-ripple { fill: none; stroke: #34d399; stroke-width: 1.2; opacity: 0; transform-box: fill-box; transform-origin: center; animation: nodeRipple 3.6s ease-out infinite; }
+    @keyframes nodeRipple { 0% { transform: scale(0.12); opacity: 0.45; } 60% { opacity: 0; } 100% { transform: scale(1); opacity: 0; } }
+
+    /* Data packets: weekly reports travelling into the hub */
+    .viz-packet { fill: #eff6ff; filter: drop-shadow(0 0 5px rgba(96, 165, 250, 0.9)); }
+
+    /* Central hub halo: acknowledging incoming reports */
+    .loader-halo {
+      position: absolute; width: 35%; aspect-ratio: 1; border-radius: 50%;
+      border: 1px solid rgba(96, 165, 250, 0.5); z-index: 0;
+      animation: haloPing 3.6s ease-out infinite;
+    }
+    @keyframes haloPing { 0% { transform: scale(0.94); opacity: 0.5; } 70% { opacity: 0; } 100% { transform: scale(1.32); opacity: 0; } }
+
+    /* BRAND LOGO - the central surveillance hub */
     .loader-logo {
-      width: 40%; height: 40%;
+      width: 35%; aspect-ratio: 1;
       object-fit: cover;
       border-radius: 50%;
       border: 3px solid rgba(255, 255, 255, 0.9);
@@ -204,6 +225,15 @@
       50%  { transform: scale(1.07); box-shadow: 0 0 28px rgba(255, 255, 255, 0.55), 0 0 60px rgba(59, 130, 246, 0.60); }
       100% { transform: scale(1);    box-shadow: 0 0 15px rgba(255, 255, 255, 0.30), 0 0 35px rgba(59, 130, 246, 0.40); }
     }
+
+    /* Fallback core if the logo image ever fails to load */
+    .loader-core {
+      position: absolute; left: 50%; top: 50%; width: 44px; height: 44px;
+      background: #ffffff; border-radius: 50%; z-index: 1;
+      box-shadow: 0 0 15px #ffffff, 0 0 35px #3b82f6;
+      animation: pulseCore 1.6s ease-in-out infinite alternate;
+    }
+    @keyframes pulseCore { 0% { transform: translate(-50%, -50%) scale(0.92); box-shadow: 0 0 10px #ffffff, 0 0 22px #3b82f6; } 100% { transform: translate(-50%, -50%) scale(1.1); box-shadow: 0 0 22px #ffffff, 0 0 45px #3b82f6; } }
 
     /* Typography */
     .loader-title { 
@@ -316,7 +346,7 @@
       
       .loader-title { font-size: 1.3rem; }
       .loader-subtitle { font-size: 0.75rem; letter-spacing: 4px; }
-      .loader-rings { width: 110px; height: 110px; }
+      .loader-stage { width: 250px; }
     }
 
     @media (max-width: 480px) {
@@ -428,10 +458,92 @@
     <div class="loader-glow-1"></div>
     <div class="loader-glow-2"></div>
     
-    <div class="loader-rings">
-      <div class="ring ring-1"></div>
-      <div class="ring ring-2"></div>
-      <div class="ring ring-3"></div>
+    <div class="loader-stage">
+      <svg class="loader-viz" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="ecgFade" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="320" y2="0">
+            <stop offset="0" stop-color="#34d399" stop-opacity="0"/>
+            <stop offset="0.16" stop-color="#34d399" stop-opacity="0.9"/>
+            <stop offset="0.84" stop-color="#34d399" stop-opacity="0.9"/>
+            <stop offset="1" stop-color="#34d399" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Real-time vital-sign trace sweeping behind the hub -->
+        <path class="viz-ecg" pathLength="100" stroke="url(#ecgFade)" d="M0,100 L12,100 L16,95 L21,95 L25,100 L30,100 L33,104 L37,70 L41,124 L45,100 L50,100 L56,94 L62,94 L66,100 L80,100 L92,100 L96,95 L101,95 L105,100 L110,100 L113,104 L117,70 L121,124 L125,100 L130,100 L136,94 L142,94 L146,100 L160,100 L172,100 L176,95 L181,95 L185,100 L190,100 L193,104 L197,70 L201,124 L205,100 L210,100 L216,94 L222,94 L226,100 L240,100 L252,100 L256,95 L261,95 L265,100 L270,100 L273,104 L277,70 L281,124 L285,100 L290,100 L296,94 L302,94 L306,100 L320,100">
+          <animate attributeName="stroke-dashoffset" from="100" to="0" dur="3.2s" repeatCount="indefinite"/>
+        </path>
+
+        <!-- Data links: each reporting facility connected to the central hub -->
+        <g>
+          <path id="spoke1" class="viz-spoke" d="M75,62 L103.4,74.7"/>
+          <path id="spoke2" class="viz-spoke" d="M248,70 L218.7,80"/>
+          <path id="spoke3" class="viz-spoke" d="M65,122 L99.6,114"/>
+          <path id="spoke4" class="viz-spoke" d="M240,142 L215,128.8"/>
+          <path id="spoke5" class="viz-spoke" d="M130,28 L136.2,42.8"/>
+          <path id="spoke6" class="viz-spoke" d="M188,172 L182.5,157.8"/>
+          <path id="spoke7" class="viz-spoke" d="M200,35 L192.5,47.2"/>
+        </g>
+
+        <!-- Reporting facilities: breathing nodes that transmit surveillance pings -->
+        <g class="viz-nodes">
+          <g transform="translate(75,62)">
+            <circle class="viz-node-halo" r="6.5"/><circle class="viz-node-dot" r="3"/><circle class="viz-ripple" r="13"/>
+          </g>
+          <g transform="translate(248,70)">
+            <circle class="viz-node-halo" r="7"/><circle class="viz-node-dot" r="2.7" style="animation-delay:.4s"/><circle class="viz-ripple" r="14" style="animation-delay:.9s"/>
+          </g>
+          <g transform="translate(65,122)">
+            <circle class="viz-node-halo" r="6"/><circle class="viz-node-dot" r="3.2" style="animation-delay:.8s"/><circle class="viz-ripple" r="13" style="animation-delay:1.8s"/>
+          </g>
+          <g transform="translate(240,142)">
+            <circle class="viz-node-halo" r="7.2"/><circle class="viz-node-dot" r="2.8" style="animation-delay:1.2s"/><circle class="viz-ripple" r="14.5" style="animation-delay:2.7s"/>
+          </g>
+          <g transform="translate(130,28)">
+            <circle class="viz-node-halo" r="6.2"/><circle class="viz-node-dot" r="2.9" style="animation-delay:1.6s"/><circle class="viz-ripple" r="12.5" style="animation-delay:.5s"/>
+          </g>
+          <g transform="translate(188,172)">
+            <circle class="viz-node-halo" r="6.8"/><circle class="viz-node-dot" r="3.1" style="animation-delay:2s"/><circle class="viz-ripple" r="13.5" style="animation-delay:1.3s"/>
+          </g>
+          <g transform="translate(200,35)">
+            <circle class="viz-node-halo" r="6.4"/><circle class="viz-node-dot" r="2.8" style="animation-delay:2.4s"/><circle class="viz-ripple" r="13" style="animation-delay:2.2s"/>
+          </g>
+        </g>
+
+        <!-- Weekly report packets streaming from facilities into the hub -->
+        <g class="viz-packets">
+          <circle class="viz-packet" r="2.5" opacity="0">
+            <animateMotion dur="2.7s" begin="0.2s" repeatCount="indefinite"><mpath href="#spoke1" xlink:href="#spoke1"/></animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.12;0.85;1" dur="2.7s" begin="0.2s" repeatCount="indefinite"/>
+          </circle>
+          <circle class="viz-packet" r="2.3" opacity="0">
+            <animateMotion dur="3.1s" begin="1.1s" repeatCount="indefinite"><mpath href="#spoke2" xlink:href="#spoke2"/></animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.12;0.85;1" dur="3.1s" begin="1.1s" repeatCount="indefinite"/>
+          </circle>
+          <circle class="viz-packet" r="2.6" opacity="0">
+            <animateMotion dur="2.9s" begin="0.6s" repeatCount="indefinite"><mpath href="#spoke3" xlink:href="#spoke3"/></animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.12;0.85;1" dur="2.9s" begin="0.6s" repeatCount="indefinite"/>
+          </circle>
+          <circle class="viz-packet" r="2.4" opacity="0">
+            <animateMotion dur="3.3s" begin="1.7s" repeatCount="indefinite"><mpath href="#spoke4" xlink:href="#spoke4"/></animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.12;0.85;1" dur="3.3s" begin="1.7s" repeatCount="indefinite"/>
+          </circle>
+          <circle class="viz-packet" r="2.2" opacity="0">
+            <animateMotion dur="2.5s" begin="0.9s" repeatCount="indefinite"><mpath href="#spoke5" xlink:href="#spoke5"/></animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.12;0.85;1" dur="2.5s" begin="0.9s" repeatCount="indefinite"/>
+          </circle>
+          <circle class="viz-packet" r="2.5" opacity="0">
+            <animateMotion dur="3s" begin="0.4s" repeatCount="indefinite"><mpath href="#spoke6" xlink:href="#spoke6"/></animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.12;0.85;1" dur="3s" begin="0.4s" repeatCount="indefinite"/>
+          </circle>
+          <circle class="viz-packet" r="2.3" opacity="0">
+            <animateMotion dur="2.8s" begin="1.4s" repeatCount="indefinite"><mpath href="#spoke7" xlink:href="#spoke7"/></animateMotion>
+            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.12;0.85;1" dur="2.8s" begin="1.4s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+      </svg>
+
+      <div class="loader-halo"></div>
       <img src="https://raw.githubusercontent.com/AARDMC/IDSR_Monitorings/main/AACAHB%20Logo.jpg" alt="AACAHB Logo" class="loader-logo" id="loaderLogo"
            onerror="this.style.display='none'; document.getElementById('loaderCore').style.display='block';">
       <div class="loader-core" id="loaderCore" style="display: none;"></div>
