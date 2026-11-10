@@ -188,6 +188,23 @@
     @keyframes spinRing { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     @keyframes pulseCore { 0% { transform: scale(0.9); box-shadow: 0 0 10px #ffffff, 0 0 20px #3b82f6; } 100% { transform: scale(1.3); box-shadow: 0 0 25px #ffffff, 0 0 50px #3b82f6; } }
 
+    /* BRAND LOGO - Heart of the kinetic rings */
+    .loader-logo {
+      width: 40%; height: 40%;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.9);
+      background: #ffffff;
+      box-shadow: 0 0 18px rgba(255, 255, 255, 0.35), 0 0 45px rgba(59, 130, 246, 0.5);
+      animation: pulseLogo 2.2s ease-in-out infinite;
+      position: relative; z-index: 1;
+    }
+    @keyframes pulseLogo {
+      0%   { transform: scale(1);    box-shadow: 0 0 15px rgba(255, 255, 255, 0.30), 0 0 35px rgba(59, 130, 246, 0.40); }
+      50%  { transform: scale(1.07); box-shadow: 0 0 28px rgba(255, 255, 255, 0.55), 0 0 60px rgba(59, 130, 246, 0.60); }
+      100% { transform: scale(1);    box-shadow: 0 0 15px rgba(255, 255, 255, 0.30), 0 0 35px rgba(59, 130, 246, 0.40); }
+    }
+
     /* Typography */
     .loader-title { 
       font-size: 1.7rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; 
@@ -415,7 +432,9 @@
       <div class="ring ring-1"></div>
       <div class="ring ring-2"></div>
       <div class="ring ring-3"></div>
-      <div class="loader-core"></div>
+      <img src="https://raw.githubusercontent.com/AARDMC/IDSR_Monitorings/main/AACAHB%20Logo.jpg" alt="AACAHB Logo" class="loader-logo" id="loaderLogo"
+           onerror="this.style.display='none'; document.getElementById('loaderCore').style.display='block';">
+      <div class="loader-core" id="loaderCore" style="display: none;"></div>
     </div>
     
     <div class="loader-title">Addis Ababa City</div>
